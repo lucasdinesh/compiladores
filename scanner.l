@@ -1,12 +1,18 @@
 %{
 #include "tokens.h"
 int running = 1;
+int lineNumber=1;
 %}
+
+%x COMMENT
 
 %%
 
 [-,;{}+:\[\]\(\)\*/\%<>&|~=] {return yytext[0];}
-[ \n\t]+
+[ \t]+
+"//".*
+"/n"    {++lineNumber;}
+"/*"    { BEGIN(COMMENT);}
 "bool" { return KW_BOOL;}
 "int"   { return KW_INT;}
 "char"  { return KW_CHAR;}
@@ -17,11 +23,19 @@ int running = 1;
 "read"  { return KW_READ;}
 "return" { return KW_RETURN;}
 [a-zA-Z_][a-zA-Z0-9_]* { return TK_IDENTIFIER;}
+'.'   {return LIT_CHAR;}
+([0-9]+\.[0-9]+|\.[0-9]+|[0-9]+\.) {return LIT_REAL;}
+[0-9]+ {return LIT_INT;}
+\"(?:\\"|\\n|[^\"])*\" { return LIT_STRING;}
 "<=" { return OPERATOR_LE;}
 ">=" { return OPERATOR_GE;}
 "==" { return OPERATOR_EQ;}
 "!=" { return OPERATOR_DIF;}
 .       { return TOKEN_ERROR; }
+
+<COMMENT>"*/"   {BEGIN(INITIAL);}
+<COMMENT>"\n"   { ++lineNumber; }
+<COMMENT>.
 
 %%
 
@@ -44,23 +58,20 @@ switch(tok) {
     case KW_FLOAT: fprintf(stderr, "KW_FLOAT\n"); break;
     case KW_RETURN: fprintf(stderr, "KW_RETURN\n"); break;
     case KW_INT: fprintf(stderr, "KW_INT\n"); break;
+    case TK_IDENTIFIER: fprintf(stderr, "TK_IDENTIFIER\n"); break;
     case OPERATOR_LE: fprintf(stderr, "OPERATOR_LE\n"); break;
     case OPERATOR_GE: fprintf(stderr, "OPERATOR_GE\n"); break;
     case OPERATOR_EQ: fprintf(stderr, "OPERATOR_EQ\n"); break;
     case OPERATOR_DIF: fprintf(stderr, "OPERATOR_DIF\n"); break;
     case TOKEN_ERROR: fprintf(stderr, "TOKEN_ERROR\n"); break;
-    case 37 ... 38:
-    case 40 ... 45:
-    case 47:
-    case 58 ... 62:
-    case 91:
-    case 93:
-    case 123 ... 126:
-        fprintf(stderr, "%d\n", tok); break;
-    default: fprintf(stderr, "UNEXPECTED TOKEN %d\n", tok); break;
+    case LIT_STRING: fprintf(stderr, "LIT_STRING\n"); break;
+    case LIT_INT: fprintf(stderr, "LIT_INT\n"); break;
+    case LIT_REAL: fprintf(stderr, "LIT_REAL\n"); break;
+    case LIT_CHAR: fprintf(stderr, "LIT_CHAR\n"); break;
+    default: fprintf(stderr, "%d\n", tok); break;
     }
 }
-
+ fprintf(stderr, "File has %d lines\n", lineNumber);
 }
 
 int yywrap()
