@@ -49,6 +49,8 @@ int main(int argc, char *argv[]){
             case LIT_INT: fprintf(stderr, "LIT_INT\n"); break;
             case LIT_REAL: fprintf(stderr, "LIT_REAL\n"); break;
             case LIT_CHAR: fprintf(stderr, "LIT_CHAR\n"); break;
+            case LIT_FALSE: fprintf(stderr, "LIT_FALSE\n"); break;
+            case LIT_TRUE: fprintf(stderr, "LIT_TRUE\n"); break;
             default: fprintf(stderr, "%d\n", token); break;
     }
 }

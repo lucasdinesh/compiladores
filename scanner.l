@@ -25,15 +25,19 @@ int lineNumber = 1;
 "while"                             { return KW_WHILE;}
 "read"                              { return KW_READ;}
 "return"                            { return KW_RETURN;}
+
 "<="                                { return OPERATOR_LE;}
 ">="                                { return OPERATOR_GE;}
 "=="                                { return OPERATOR_EQ;}
 "!="                                { return OPERATOR_DIF;}
-"true"                                {hashInsert(LIT_TRUE, yytext); return LIT_TRUE ;}
-"false"                                {hashInsert(LIT_FALSE, yytext); return LIT_FALSE ;}
+
+true                                {hashInsert(LIT_TRUE, yytext); return LIT_TRUE ;}
+false                               {hashInsert(LIT_FALSE, yytext); return LIT_FALSE ;}
+
 [a-zA-Z_][a-zA-Z0-9_]*              {hashInsert(TK_IDENTIFIER, yytext); return TK_IDENTIFIER;}
+
 '.'                                 {hashInsert(LIT_CHAR, yytext); return LIT_CHAR;}
-\"(\\[n"]|[^"\n])*[^\\]\"            {hashInsert(LIT_STRING, yytext); return LIT_STRING;}
+\"(\\[n"]|[^"\n])*[^\\]\"           {hashInsert(LIT_STRING, yytext); return LIT_STRING;}
 ([0-9]+\.[0-9]+|\.[0-9]+|[0-9]+\.)  {hashInsert(LIT_REAL, yytext); return LIT_REAL;}
 [0-9]+                              {hashInsert(LIT_INT, yytext); return LIT_INT;}
 .                                   { return TOKEN_ERROR; }
