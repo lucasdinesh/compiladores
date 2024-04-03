@@ -25,6 +25,7 @@ int lineNumber = 1;
 "while"                             { return KW_WHILE;}
 "read"                              { return KW_READ;}
 "return"                            { return KW_RETURN;}
+"print"                            { return KW_PRINT;}
 
 "<="                                { return OPERATOR_LE;}
 ">="                                { return OPERATOR_GE;}
