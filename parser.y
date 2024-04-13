@@ -26,6 +26,11 @@
 
 %token TOKEN_ERROR
 
+%left '|' '&' '~'
+%left '<' '>' OPERATOR_LE OPERATOR_GE OPERATOR_EQ OPERATOR_DIF
+%left '+' '-'
+%left '*' '/' '%'
+
 %%
 
 programa: decl
@@ -38,7 +43,7 @@ decl: dec decl
 dec:    typos TK_IDENTIFIER ':' literais ';'
          | typos TK_IDENTIFIER '[' LIT_INT ']' declvector ';'
          | typos TK_IDENTIFIER '(' paraml ')' body
-         | lacos '(' laco_cond ')' body
+         ;
 
 
 declvector: ':' literais restovector
@@ -60,28 +65,42 @@ param: ',' typos TK_IDENTIFIER param
 body: '{' lcmd '}'
 ;
 
-lcmd: cmd lcmd
+lcmd: cmd ';' resto_cmd
     |
-;
+    ;
 
-cmd: body
-    |
+resto_cmd: cmd ';' resto_cmd
+            |
+            ;
 
-;
+cmd: TK_IDENTIFIER '=' expr
+    | KW_IF '(' expr ')' resto_if
+    | KW_WHILE '(' expr ')' body
+    ;
+
+ resto_if: body KW_ELSE body
+           | body
+           ;
 
 expr: literais
-    |  TK_IDENTIFIER
-    | expr '+' expr
-    | expr '-' expr
-    | expr '*' expr
-    | expr '/' expr
-    | comp_expr
-    | '(' expr ')'
+     | TK_IDENTIFIER
+     | expr '+' expr
+     | expr '-' expr
+     | expr '*' expr
+     | expr '/' expr
+     | expr '%' expr
+     | expr '>' expr
+     | expr '<' expr
+     | expr '&' expr
+     | expr '|' expr
+     | expr '~' expr
+     | expr OPERATOR_LE expr
+     | expr OPERATOR_GE expr
+     | expr OPERATOR_EQ expr
+     | expr OPERATOR_DIF expr
+     | '(' expr ')'
+     ;
 
-comp_expr:     expr OPERATOR_LE expr
-              | expr OPERATOR_GE expr
-              | expr OPERATOR_EQ expr
-              | expr OPERATOR_DIF expr
 
 literais: LIT_INT
          | LIT_CHAR
@@ -96,25 +115,6 @@ typos: KW_CHAR
       | KW_FLOAT
       | KW_BOOL
       ;
-lacos:  KW_IF
-        | KW_ELSE
-        | KW_WHILE
-        ;
-
-aritm_op: '+'
-        | '-'
-        | '*'
-        | '/'
-        | '>'
-        | '<'
-        | '&'
-        | '|'
-        | '~'
-        | OPERATOR_LE
-        | '~'
-        | '~'
-        | '~'
-
 %%
 
 int yyerror ()
