@@ -1,3 +1,15 @@
+%{
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <string.h>
+	#include "hash.h"
+
+
+	int yylex();
+	int yyerror(char *message);
+	extern int getLineNumber();
+%}
+
 %token KW_CHAR
 %token KW_INT
 %token KW_FLOAT
@@ -42,7 +54,7 @@ decl: dec decl
 
 dec:    typos TK_IDENTIFIER ':' literais ';'
          | typos TK_IDENTIFIER '[' LIT_INT ']' declvector ';'
-         | typos TK_IDENTIFIER '(' paraml ')' body
+         | typos TK_IDENTIFIER '(' paraml ')' cmd_block
          ;
 
 
@@ -54,35 +66,45 @@ restovector: literais restovector
             |
             ;
 
-paraml: typos TK_IDENTIFIER param
+param: typos TK_IDENTIFIER
+        ;
+
+paraml: param resto_param
         |
         ;
 
-param: ',' typos TK_IDENTIFIER param
-        |
-        ;
-
-body: '{' lcmd '}'
-;
-
-lcmd: cmd ';' resto_cmd
-    |
-    ;
-
-resto_cmd: cmd ';' resto_cmd
+resto_param: ',' param resto_param
             |
             ;
 
-cmd: TK_IDENTIFIER '=' expr
-    | KW_IF '(' expr ')' resto_if
-    | KW_WHILE '(' expr ')' body
+cmd_block: '{' lcmd '}'
+;
+
+lcmd: cmd lcmd
+    | ';' lcmd
+    |
     ;
 
- resto_if: body KW_ELSE body
-           | body
+cmd: TK_IDENTIFIER '=' expr ';'
+    | TK_IDENTIFIER '['expr']' '=' expr ';'
+    | KW_IF '(' expr ')' resto_if
+    | KW_WHILE '(' expr ')' cmd
+    | KW_PRINT options_print ';'
+    | KW_READ typos TK_IDENTIFIER ';'
+    | cmd_block
+    | KW_RETURN expr ';'
+    ;
+
+
+ options_print: LIT_STRING
+                | typos expr
+
+ resto_if: cmd KW_ELSE cmd
+           | cmd
            ;
 
-expr: literais
+expr: TK_IDENTIFIER '['expr']'
+     | literais
      | TK_IDENTIFIER
      | expr '+' expr
      | expr '-' expr
@@ -99,8 +121,16 @@ expr: literais
      | expr OPERATOR_EQ expr
      | expr OPERATOR_DIF expr
      | '(' expr ')'
+     | TK_IDENTIFIER '(' argl ')'
      ;
 
+argl: expr arg_rest
+      |
+      ;
+
+arg_rest: ',' expr arg_rest
+        |
+        ;
 
 literais: LIT_INT
          | LIT_CHAR
@@ -117,8 +147,7 @@ typos: KW_CHAR
       ;
 %%
 
-int yyerror ()
-{
+int yyerror(char *message){
 fprintf(stderr, "Syntax error, line = %d.\n", getLineNumber());
 exit(3);
 }

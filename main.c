@@ -1,15 +1,17 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "lex.yy.h"
 #include "y.tab.c"
 
 int yylex();
-extern char *yytext;
-extern FILE *yyin;
+extern FILE* yyin;
+extern FILE* file();
 
-int getLineNumber();
-int isRunning(void);
-void initMe(void);
-void hashPrint();
+extern int isRunning();
+extern int getLineNumber();
+extern void initMe();
+extern void hashPrint();
+extern int yyparser();
 
 int main(int argc, char *argv[]){
 	if(argc<2){
