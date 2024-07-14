@@ -1,0 +1,7 @@
+int main (){
+char a:15;
+bool b:true;
+char c:'x';
+char d:100;
+  }
+  
