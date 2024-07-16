@@ -1,0 +1,53 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "ast.h"
+#include "semantic.h"
+
+int yylex();
+extern FILE *yyin;
+
+extern int isRunning();
+extern int getLineNumber();
+extern void initMe();
+extern void hashPrint();
+extern int yyparse(); 
+extern AST *getAST();
+
+int main(int argc, char *argv[]){
+	FILE *output;  
+
+	if (argc < 3){
+		fprintf(stderr, "Call: ./etapa3 input.txt output.txt\n");
+		exit(1);
+    }
+
+    if ((yyin = fopen(argv[1], "r")) == 0){
+        fprintf(stderr, "Fail to open file %s\n", argv[1]);
+		exit(1);
+    }
+
+    if ((output = fopen(argv[2], "w+")) == 0){
+        fprintf(stderr, "Fail to open file %s\n", argv[2]);
+		exit(1);
+    }
+
+	initMe();
+
+    yyparse();
+
+    hashPrint();
+
+	if(get_semantic_errors > 0)
+		exit (4);
+
+	fprintf(stderr, "Compiled Successfully.\n");
+
+	fprintf(stderr, "Uncompiling!\n");
+
+	uncompileAST(getAST(), output);
+
+	fclose(output);
+
+    exit(0);
+}
+

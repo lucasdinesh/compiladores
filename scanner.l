@@ -26,22 +26,22 @@ int lineNumber = 1;
 "while"                             { return KW_WHILE;}
 "read"                              { return KW_READ;}
 "return"                            { return KW_RETURN;}
-"print"                            { return KW_PRINT;}
+"print"                            	{ return KW_PRINT;}
 
 "<="                                { return OPERATOR_LE;}
 ">="                                { return OPERATOR_GE;}
 "=="                                { return OPERATOR_EQ;}
 "!="                                { return OPERATOR_DIF;}
 
-true                                {yylval.symbol = hashInsert(LIT_TRUE, yytext); return LIT_TRUE ;}
-false                               {yylval.symbol = hashInsert(LIT_FALSE, yytext); return LIT_FALSE ;}
+true                                {yylval.symbol = hashInsert(SYMBOL_LIT_TRUE, yytext); return LIT_TRUE ;}
+false                               {yylval.symbol = hashInsert(SYMBOL_LIT_FALSE, yytext); return LIT_FALSE ;}
 
-[a-zA-Z_][a-zA-Z0-9_]*              {yylval.symbol = hashInsert(TK_IDENTIFIER, yytext); return TK_IDENTIFIER;}
+[a-zA-Z_][a-zA-Z0-9_]*              {yylval.symbol = hashInsert(SYMBOL_IDENTIFIER, yytext); return TK_IDENTIFIER;}
 
-'.'                                 {yylval.symbol = hashInsert(LIT_CHAR, yytext); return LIT_CHAR;}
-\"(\\[n"]|[^"\n])*[^\\]\"           {yylval.symbol = hashInsert(LIT_STRING, yytext); return LIT_STRING;}
-([0-9]+\.[0-9]+|\.[0-9]+|[0-9]+\.)  {yylval.symbol = hashInsert(LIT_REAL, yytext); return LIT_REAL;}
-[0-9]+                              {yylval.symbol = hashInsert(LIT_INT, yytext); return LIT_INT;}
+'.'                                 {yylval.symbol = hashInsert(SYMBOL_LIT_CHAR, yytext); return LIT_CHAR;}
+\"(\\[n"]|[^"\n])*[^\\]\"           {yylval.symbol = hashInsert(SYMBOL_LIT_STRING, yytext); return LIT_STRING;}
+([0-9]+\.[0-9]+|\.[0-9]+|[0-9]+\.)  {yylval.symbol = hashInsert(SYMBOL_LIT_REAL, yytext); return LIT_REAL;}
+[0-9]+                              {yylval.symbol = hashInsert(SYMBOL_LIT_INTEGER, yytext); return LIT_INT;}
 .                                   { return TOKEN_ERROR; }
 
 <COMMENT>"*/"   {BEGIN(INITIAL);}

@@ -3,21 +3,24 @@
 #include <string.h>
 #include "hash.h"
 
-hash_node* Table[HASH_SIZE];
+hash_node *Table[HASH_SIZE];
 
-void hashInit(void){
-    for(int i = 0; i<HASH_SIZE; i++){
+void hashInit(void)
+{
+    for (int i = 0; i < HASH_SIZE; i++)
+    {
         Table[i] = 0;
     }
 }
 
-hash_node* hashInsert(int type, char* text){
-    hash_node* newnode = hashFind(text);
-    if(newnode != NULL)
+hash_node *hashInsert(int type, char *text)
+{
+    hash_node *newnode = hashFind(text);
+    if (newnode != NULL)
         return newnode;
 
     int address = hashAddress(text);
-    newnode = (hash_node*) calloc(1, sizeof(hash_node));
+    newnode = (hash_node *)calloc(1, sizeof(hash_node));
     newnode->type = type;
     newnode->text = calloc(strlen(text) + 1, sizeof(char));
     strcpy(newnode->text, text);
@@ -28,31 +31,58 @@ hash_node* hashInsert(int type, char* text){
     return newnode;
 }
 
-hash_node* hashFind(char *text){
-    hash_node* node;
+hash_node *hashFind(char *text)
+{
+    hash_node *node;
     int address = hashAddress(text);
-    for(node = Table[address]; node != NULL; node = node->next){
-        if(strcmp(text, node->text) == 0)
+    for (node = Table[address]; node != NULL; node = node->next)
+    {
+        if (strcmp(text, node->text) == 0)
             return node;
     }
     return 0;
 }
 
-int hashAddress(char *text){
+int hashAddress(char *text)
+{
     int address = 1;
-    for(int i = 0; i<strlen(text); i++){
+    for (int i = 0; i < strlen(text); i++)
+    {
         address = (address * text[i]) % HASH_SIZE + 1;
     }
     return address - 1;
 }
 
-void hashPrint(void){
-    hash_node* node;
-    for(int i = 0; i < HASH_SIZE; i++){
-        if(Table[i] != NULL){
-            for(node = Table[i]; node != NULL; node = node->next){
+void hashPrint(void)
+{
+    hash_node *node;
+    for (int i = 0; i < HASH_SIZE; i++)
+    {
+        if (Table[i] != NULL)
+        {
+            for (node = Table[i]; node != NULL; node = node->next)
+            {
                 printf("Table[%d] - type: %d text: %s\n", i, node->type, node->text);
             }
         }
     }
+}
+
+int hash_check_undeclared(void)
+{
+    int undeclared =0;
+    hash_node *node;
+    for (int i = 0; i < HASH_SIZE; i++)
+    {
+        if (Table[i] != NULL)
+        {
+            for (node = Table[i]; node != NULL; node = node->next)
+            if(node->type == SYMBOL_IDENTIFIER)
+            {
+                fprintf(stderr, "SEMANTIC ERROR: identifier %s undeclared\n", node->text);
+                ++ undeclared;
+            }
+        }
+    }
+    return undeclared;
 }

@@ -3,6 +3,7 @@
 	#include <stdlib.h>
         #include "hash.h"
         #include "ast.h"
+        #include "semantic.h"
 
 
 	int yylex();
@@ -72,7 +73,11 @@
 
 %%
 
-programa: decl                   {root=$$;astPrint(root, 0);}
+programa: decl                   {root=$$;
+
+                        astPrint(root, 0); 
+                        check_and_set_declarations(root);
+                        check_undeclared();}
 ;
 
 decl: dec decl                          {$$=astCreate(AST_DECL, 0, $1, $2, 0, 0);}
