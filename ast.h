@@ -1,4 +1,6 @@
 // AST - Abstract Syntax Tree
+#include <stdio.h>
+#include <stdlib.h>
 #include "hash.h"
 #ifndef AST_HEADER
 #define AST_HEADER
@@ -26,15 +28,15 @@
 #define AST_GE 18
 #define AST_EQ 19
 #define AST_DIF 20
-#define AST_TPBYTE 21
-#define AST_TPINT 22
-#define AST_TPFLOAT 23
-#define AST_TPBOOL 24
+#define AST_TYPECHAR 21
+#define AST_TYPEINT 22
+#define AST_TYPEFLOAT 23
+#define AST_TYPEBOOL 24
 #define AST_VECINIT 25
 #define AST_VECREST 26
 #define AST_VECATTR 27
 #define AST_IF 28
-#define AST_ELSE 29
+#define AST_IFELSE 29
 #define AST_WHILE 30
 #define AST_PRINT 31
 #define AST_READ 32
@@ -46,11 +48,13 @@
 #define AST_PRINTWDECL 39
 #define AST_CMDBLOCK 40
 #define AST_LCMDINIT 41
-#define AST_LCMDEND 42
+#define AST_SEMICOLON 42
 #define AST_DECL 43
 #define AST_PARAML 44
 #define AST_PARAMLREST 45
 #define AST_PARAM 46
+#define AST_PAREN 47
+
 
 
 
@@ -63,6 +67,7 @@ typedef struct astnode
 
 AST *astCreate(int type, hash_node *symbol, AST* s0, AST* s1, AST* s2, AST* s3);
 void astPrint(AST *node, int level);
+void uncompileAST(AST *root, FILE *file);
 
 #endif
 

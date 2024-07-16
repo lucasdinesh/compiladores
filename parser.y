@@ -1,8 +1,7 @@
 %{
-	#include <stdio.h>
+        #include <stdio.h>
 	#include <stdlib.h>
-	#include <string.h>
-	#include "hash.h"
+        #include "hash.h"
         #include "ast.h"
 
 
@@ -65,7 +64,6 @@
 %type<ast> lcmd;
 %type<ast> cmd;
 %type<ast> options_print;
-%type<ast> resto_if;
 %type<ast> expr;
 %type<ast> argl;
 %type<ast> arg_rest;
@@ -93,7 +91,7 @@ declvector: ':' literais restovector                                    {$$=astC
 
 restovector: literais restovector                                       {$$=astCreate(AST_VECREST, 0, $1, $2, 0, 0);}
             |                           {$$=0;}
-            ;
+            ; 
 
 param: typos TK_IDENTIFIER                      {$$=astCreate(AST_PARAM, $2, $1, 0, 0, 0);}
         ;
@@ -110,18 +108,19 @@ cmd_block: '{' lcmd '}'                         {$$=astCreate(AST_CMDBLOCK, 0, $
 ;
 
 lcmd: cmd lcmd                                  {$$=astCreate(AST_LCMDINIT, 0, $1, $2, 0, 0);}                                                      
-    | ';' lcmd                                  {$$=astCreate(AST_LCMDEND, 0, $2, 0, 0, 0);}
     |                                           {$$ =0;}
     ;
 
-cmd: TK_IDENTIFIER '=' expr ';'                 {$$= astCreate(AST_ATTR,$1,0,0,0,0);}  
+cmd: TK_IDENTIFIER '=' expr ';'                 {$$= astCreate(AST_ATTR,$1,$3,0,0,0);}  
     | TK_IDENTIFIER '['expr']' '=' expr ';'     {$$= astCreate(AST_VECATTR,$1,$3,$6,0,0);}  
-    | KW_IF '(' expr ')' resto_if               {$$= astCreate(AST_IF,0,$3,$5,0,0);}
+    | KW_IF '(' expr ')' cmd                    {$$= astCreate(AST_IF,0,$3,$5,0,0);}
+    | KW_IF '(' expr ')' cmd KW_ELSE cmd        {$$= astCreate(AST_IFELSE,0,$3,$5,$7,0);}
     | KW_WHILE '(' expr ')' cmd                 {$$= astCreate(AST_WHILE,0,$3,$5,0,0);}
     | KW_PRINT options_print ';'                {$$= astCreate(AST_PRINT,0,$2,0,0,0);}
     | KW_READ typos TK_IDENTIFIER ';'           {$$=astCreate(AST_READ, $3, $2, 0, 0, 0);}
-    | cmd_block                                 {$$=$1;}
     | KW_RETURN expr ';'                        {$$=astCreate(AST_RETURN, 0, $2, 0, 0, 0);}
+    | cmd_block                                 {$$=$1;}
+    | ';'                                       {$$ = astCreate(AST_SEMICOLON, 0, 0, 0, 0, 0);}
     ;
 
 
@@ -129,13 +128,9 @@ cmd: TK_IDENTIFIER '=' expr ';'                 {$$= astCreate(AST_ATTR,$1,0,0,0
         | typos expr                            {$$=astCreate(AST_PRINTWDECL, 0, $1, $2, 0, 0);}
         ;
 
- resto_if: cmd KW_ELSE cmd                      {$$= astCreate(AST_ELSE,0,$1,$3,0,0);}
-           | cmd                                {$$= $1;}
-           ;
-
 expr: TK_IDENTIFIER '['expr']'          {$$= astCreate(AST_VEC,$1,$3,0,0,0);}            
-     | literais                         {$$=$1;}        
      | TK_IDENTIFIER                    {$$= astCreate(AST_SYMBOL,$1,0,0,0,0);}                           
+     | literais                         {$$=$1;}        
      | expr '+' expr                    {$$= astCreate(AST_ADD,0,$1,$3,0,0);}                        
      | expr '-' expr                    {$$= astCreate(AST_SUB,0,$1,$3,0,0);}                        
      | expr '*' expr                    {$$= astCreate(AST_MULT,0,$1,$3,0,0);}                        
@@ -150,7 +145,7 @@ expr: TK_IDENTIFIER '['expr']'          {$$= astCreate(AST_VEC,$1,$3,0,0,0);}
      | expr OPERATOR_GE expr            {$$= astCreate(AST_GE,0,$1,$3,0,0);}
      | expr OPERATOR_EQ expr            {$$= astCreate(AST_EQ,0,$1,$3,0,0);}
      | expr OPERATOR_DIF expr           {$$= astCreate(AST_DIF,0,$1,$3,0,0);}
-     | '(' expr ')'                        {$$ = $2;}            
+     | '(' expr ')'                     {$$= astCreate(AST_PAREN,0,$2,0,0,0);}            
      | TK_IDENTIFIER '(' argl ')'       {$$=astCreate(AST_FUNC, $1, $3, 0, 0, 0);}                      
      ;
 
@@ -167,17 +162,20 @@ literais: LIT_INT               {$$= astCreate(AST_SYMBOL,$1,0,0,0,0);}
          | LIT_REAL             {$$= astCreate(AST_SYMBOL,$1,0,0,0,0);}  
          | LIT_FALSE            {$$= astCreate(AST_SYMBOL,$1,0,0,0,0);}  
          | LIT_TRUE             {$$= astCreate(AST_SYMBOL,$1,0,0,0,0);}  
-         | LIT_STRING           {$$= astCreate(AST_SYMBOL,$1,0,0,0,0);}  
          ;
 
-typos: KW_CHAR                  {$$=astCreate(AST_TPBYTE, 0, 0, 0, 0, 0);}
-      | KW_INT                  {$$=astCreate(AST_TPINT, 0, 0, 0, 0, 0);}
-      | KW_FLOAT                {$$=astCreate(AST_TPFLOAT, 0, 0, 0, 0, 0);}
-      | KW_BOOL                 {$$=astCreate(AST_TPBOOL, 0, 0, 0, 0, 0);}
+typos: KW_CHAR                  {$$=astCreate(AST_TYPECHAR, 0, 0, 0, 0, 0);}
+      | KW_INT                  {$$=astCreate(AST_TYPEINT, 0, 0, 0, 0, 0);}
+      | KW_FLOAT                {$$=astCreate(AST_TYPEFLOAT, 0, 0, 0, 0, 0);}
+      | KW_BOOL                 {$$=astCreate(AST_TYPEBOOL, 0, 0, 0, 0, 0);}
       ;
 %%
 
 int yyerror(char *message){
 fprintf(stderr, "Syntax error, line = %d.\n", getLineNumber());
 exit(3);
+}
+
+AST* getAST(){
+        return root;
 }

@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
- #include "ast.h"
-
- #define PRINT_CASE(constant) case constant: fprintf(stderr, #constant " "); break;
+#include "ast.h"
 
 AST *astCreate(int type, hash_node *symbol, AST* s0, AST* s1, AST* s2, AST* s3){
     AST*newnode;
@@ -50,15 +48,15 @@ void astPrint(AST *node, int level)
         case AST_GE: fprintf(stderr, "AST_GE "); break;
         case AST_EQ: fprintf(stderr, "AST_EQ "); break;
         case AST_DIF: fprintf(stderr, "AST_DIF "); break;
-        case AST_TPBYTE: fprintf(stderr, "AST_TPBYTE "); break;
-        case AST_TPINT: fprintf(stderr, "AST_TPINT "); break;
-        case AST_TPFLOAT: fprintf(stderr, "AST_TPFLOAT "); break;
-        case AST_TPBOOL: fprintf(stderr, "AST_TPBOOL "); break;
+        case AST_TYPECHAR: fprintf(stderr, "AST_TPBYTE "); break;
+        case AST_TYPEINT: fprintf(stderr, "AST_TPINT "); break;
+        case AST_TYPEFLOAT: fprintf(stderr, "AST_TPFLOAT "); break;
+        case AST_TYPEBOOL: fprintf(stderr, "AST_TPBOOL "); break;
         case AST_VECINIT: fprintf(stderr, "AST_VECINIT "); break;
         case AST_VECREST: fprintf(stderr, "AST_VECREST "); break;
         case AST_VECATTR: fprintf(stderr, "AST_VECATTR "); break;
         case AST_IF: fprintf(stderr, "AST_IF "); break;
-        case AST_ELSE: fprintf(stderr, "AST_ELSE "); break;
+        case AST_IFELSE: fprintf(stderr, "AST_IFELSE "); break;
         case AST_WHILE: fprintf(stderr, "AST_WHILE "); break;
         case AST_PRINT: fprintf(stderr, "AST_PRINT "); break;
         case AST_READ: fprintf(stderr, "AST_READ "); break;
@@ -70,11 +68,12 @@ void astPrint(AST *node, int level)
         case AST_PRINTWDECL: fprintf(stderr, "AST_PRINTWDECL "); break;
         case AST_CMDBLOCK: fprintf(stderr, "AST_CMDBLOCK "); break;
         case AST_LCMDINIT: fprintf(stderr, "AST_LCMDINIT "); break;
-        case AST_LCMDEND: fprintf(stderr, "AST_LCMDEND "); break;
         case AST_DECL: fprintf(stderr, "AST_DECL "); break;
         case AST_PARAML: fprintf(stderr, "AST_PARAML "); break;
         case AST_PARAMLREST: fprintf(stderr, "AST_PARAMLREST "); break;
         case AST_PARAM: fprintf(stderr, "AST_PARAM "); break;
+        case AST_PAREN: fprintf(stderr, "AST_PAREN "); break;
+        case AST_SEMICOLON: fprintf(stderr, "AST_SEMICOLON "); break;
 
     default: fprintf(stderr, "AST_UNKNOWN "); break;
     }
@@ -86,6 +85,278 @@ void astPrint(AST *node, int level)
 
     for(i=0; i<MAX_SONS; i++)
         astPrint(node->son[i], level+1);
+}
+
+void uncompileAST(AST *node, FILE *file){
+
+  if(node == NULL)
+    return;
+
+  switch(node->type){
+    case AST_DECL :
+      uncompileAST(node->son[0], file);
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_DECVAR :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " %s :", node->symbol->text);
+      uncompileAST(node->son[1], file);
+      fprintf(file, ";\n");
+      break;
+
+    case AST_DECVET :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " %s[", node->symbol->text);
+      uncompileAST(node->son[1], file);
+      fprintf(file, "]");      
+      uncompileAST(node->son[2], file);
+      fprintf(file, ";\n");
+      break;
+
+    case AST_DECFUNC :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " %s(", node->symbol->text);
+      uncompileAST(node->son[1], file);
+      fprintf(file, ")");      
+      uncompileAST(node->son[2], file);
+      break;
+
+    case AST_TYPECHAR :
+      fprintf(file, "char");
+      break;
+
+    case AST_TYPEINT :
+      fprintf(file, "int");
+      break;
+
+    case AST_TYPEFLOAT :
+      fprintf(file, "float");
+      break;
+
+    case AST_TYPEBOOL :
+     fprintf(file, "bool");
+      break;
+
+    case AST_SYMBOL :
+      fprintf(file, " %s ", node->symbol->text);
+      break;
+
+    case AST_VECINIT :
+      fprintf(file, " : ");
+      uncompileAST(node->son[0], file);
+      fprintf(file, " ");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_VECREST :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " ");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_PARAML :
+      uncompileAST(node->son[0], file);
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_PARAMLREST :
+      fprintf(file, ", ");
+      uncompileAST(node->son[0], file);
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_PARAM :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " ");
+      fprintf(file, "%s", node->symbol->text);
+      break;
+
+    case AST_CMDBLOCK :
+      fprintf(file, "{\n");
+      uncompileAST(node->son[0], file);
+      fprintf(file, "}");
+      break;
+
+    case AST_LCMDINIT :
+      uncompileAST(node->son[0], file);
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_SEMICOLON :
+      fprintf(file, ";\n");
+      break;
+
+    case AST_ATTR :
+      fprintf(file, "%s = ", node->symbol->text);
+      uncompileAST(node->son[0], file);
+      fprintf(file, ";\n");
+      break;
+
+    case AST_VECATTR :
+      fprintf(file, "%s[", node->symbol->text);
+      uncompileAST(node->son[0], file);
+      fprintf(file, "] = ");
+      uncompileAST(node->son[1], file);
+      fprintf(file, ";\n");
+      break;
+
+     case AST_READ :
+        fprintf(file, "read ");
+        uncompileAST(node->son[0], file);
+        fprintf(file, " %s", node->symbol->text);
+        fprintf(file, ";\n");
+        break;
+
+    case AST_PRINT :
+      fprintf(file, "print ");
+      uncompileAST(node->son[0], file);
+      fprintf(file, ";\n");
+      break;
+
+    case AST_RETURN :
+      fprintf(file, "return ");
+      uncompileAST(node->son[0], file);
+      fprintf(file, ";\n");
+      break;
+
+    case AST_IF :
+      fprintf(file, "if(");
+      uncompileAST(node->son[0], file);
+      fprintf(file, ")\n");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_IFELSE :
+     fprintf(file, "if(");
+      uncompileAST(node->son[0], file);
+      fprintf(file, ")\n");
+      uncompileAST(node->son[1], file);
+      fprintf(file, "else\n");
+      uncompileAST(node->son[2], file);
+      break;
+
+    case AST_WHILE :
+      fprintf(file, "while(");
+      uncompileAST(node->son[0], file);
+      fprintf(file, ")");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_VEC :
+      fprintf(file, "%s[", node->symbol->text);
+      uncompileAST(node->son[0], file);
+      fprintf(file, "]");
+      break;
+
+    case AST_FUNC :
+      fprintf(file, "%s(", node->symbol->text);
+      uncompileAST(node->son[0], file);
+      fprintf(file, ")");
+      break;
+
+    case AST_ADD :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " + ");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_SUB :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " - ");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_MULT :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " * ");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_DIV :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " / ");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_LESS :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " < ");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_GREATHER :
+      uncompileAST(node->son[0], file);
+      fprintf(file, ">");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_EQ :
+      uncompileAST(node->son[0], file);
+      fprintf(file, "==");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_GE :
+      uncompileAST(node->son[0], file);
+      fprintf(file, ">=");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_LE :
+      uncompileAST(node->son[0], file);
+      fprintf(file, "<=");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_DIF :
+      uncompileAST(node->son[0], file);
+      fprintf(file, "!=");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_AND :
+      uncompileAST(node->son[0], file);
+      fprintf(file, "and");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_OR :
+      uncompileAST(node->son[0], file);
+      fprintf(file, "or");
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_NOT :
+      fprintf(file, "not ");
+      uncompileAST(node->son[0], file);
+      break;
+
+    case AST_PAREN :
+      fprintf(file, "(");
+      uncompileAST(node->son[0], file);
+      fprintf(file, ")");
+      break;
+
+    case AST_ARGL :
+      uncompileAST(node->son[0], file);
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_ARGLREST :
+      fprintf(file, ", ");
+      uncompileAST(node->son[0], file);
+      uncompileAST(node->son[1], file);
+      break;
+
+    case AST_PRINTWDECL :
+      uncompileAST(node->son[0], file);
+      fprintf(file, " ");
+      uncompileAST(node->son[1], file);
+      break;
+    
+  }
+
 }
 
 // END OF FILE
