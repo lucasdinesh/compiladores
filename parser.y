@@ -77,7 +77,8 @@ programa: decl                   {root=$$;
 
                         astPrint(root, 0); 
                         check_and_set_declarations(root);
-                        check_undeclared();}
+                        check_undeclared();
+                        check_operands(root);}
 ;
 
 decl: dec decl                          {$$=astCreate(AST_DECL, 0, $1, $2, 0, 0);}

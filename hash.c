@@ -62,7 +62,7 @@ void hashPrint(void)
         {
             for (node = Table[i]; node != NULL; node = node->next)
             {
-                printf("Table[%d] - type: %d text: %s\n", i, node->type, node->text);
+                printf("Table[%d] - type: %d, text: %s, datatype: %d\n", i, node->type, node->text, node->datatype);
             }
         }
     }

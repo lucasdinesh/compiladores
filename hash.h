@@ -14,8 +14,14 @@
 #define SYMBOL_FUNCTION 9
 #define SYMBOL_VECTOR 10
 
+#define DATATYPE_INT 1
+#define DATATYPE_BOOL 2
+#define DATATYPE_FLOAT 3
+#define DATATYPE_CHAR 4
+
 typedef struct hash_node{
     int type;
+    int datatype;
     char* text;
     struct hash_node* next;
 } hash_node;
