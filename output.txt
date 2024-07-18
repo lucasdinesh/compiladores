@@ -1,0 +1,5 @@
+int a : 15 ;
+bool b : true ;
+int main(){
+a =  b  +  a ;
+}

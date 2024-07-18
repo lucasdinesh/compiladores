@@ -12,6 +12,7 @@ extern void initMe();
 extern void hashPrint();
 extern int yyparse(); 
 extern AST *getAST();
+extern int checkSemanticErrors();
 
 int main(int argc, char *argv[]){
 	FILE *output;  
@@ -37,9 +38,6 @@ int main(int argc, char *argv[]){
 
     hashPrint();
 
-	if(get_semantic_errors > 0)
-		exit (4);
-
 	fprintf(stderr, "Compiled Successfully.\n");
 
 	fprintf(stderr, "Uncompiling!\n");
@@ -47,6 +45,8 @@ int main(int argc, char *argv[]){
 	uncompileAST(getAST(), output);
 
 	fclose(output);
+
+	checkSemanticErrors();
 
     exit(0);
 }

@@ -1,17 +1,34 @@
 #ifndef SEMANTIC_HEADER
 #define SEMANTIC_HEADER
 
-
+#include <stdbool.h>
 #include "hash.h"
 #include "ast.h"
 
-extern int SemanticErrors;
+extern int semanticErrors;
 
-void check_and_set_declarations(AST *node);
-void check_undeclared();
-int get_semantic_errors();
+//DATATYPÈ CHECK
+int isDatatypeCompatible(int datatype1, int datatype2);
+int isLogicalOperation(int nodetype);
+int isRelationalOperation(int nodetype);
+int isArithmeticOperation(int nodetype);
+int isNumerical(int datatype);
+int isChar(int datatype);
+int isBoolean(int datatype);
+int isInteger(int datatype);
+int validToArithmetic(int dataType);
+int isNumber(AST *node);
+
+
+void checkAndSetDeclarations(AST *node);
+void checkUndeclared();
 int getDatatype();
-void check_operands(AST *node);
+void checkOperands(AST *node);
+void setNodeTypes(AST *node);
+int checkSemantic(AST *root);
+
+
+
 
 
 #endif

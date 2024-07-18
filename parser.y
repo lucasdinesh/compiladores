@@ -10,6 +10,7 @@
 	int yyerror(char *message);
 	extern int getLineNumber();
         AST *root;
+        int SemanticErrors;
 %}
 
 %union
@@ -76,9 +77,8 @@
 programa: decl                   {root=$$;
 
                         astPrint(root, 0); 
-                        check_and_set_declarations(root);
-                        check_undeclared();
-                        check_operands(root);}
+                        SemanticErrors = checkSemantic(root);
+                        }
 ;
 
 decl: dec decl                          {$$=astCreate(AST_DECL, 0, $1, $2, 0, 0);}
@@ -183,4 +183,11 @@ exit(3);
 
 AST* getAST(){
         return root;
+}
+
+void checkSemanticErrors(){
+  if(SemanticErrors > 0){
+    fprintf(stderr, "\nCompilation finished with %d semantic errors.\n", SemanticErrors);
+    exit(4);
+  }
 }

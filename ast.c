@@ -78,7 +78,7 @@ void astPrint(AST *node, int level)
     }
 
     if(node->symbol !=0)
-        fprintf(stderr, "%s\n", node->symbol->text);
+        fprintf(stderr, "%s, node->datatype: %d\n", node->symbol->text, node->datatype);
     else
         fprintf(stderr, "0\n");
 
