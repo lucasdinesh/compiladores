@@ -13,7 +13,6 @@
 #define AST_SUB 3
 #define AST_DIV 4
 #define AST_MULT 5
-#define AST_PERCENT 6
 #define AST_GREATHER 7
 #define AST_LESS 8
 #define AST_AND 9
@@ -32,19 +31,19 @@
 #define AST_TYPEINT 22
 #define AST_TYPEFLOAT 23
 #define AST_TYPEBOOL 24
-#define AST_VECINIT 25
-#define AST_VECREST 26
-#define AST_VECATTR 27
+#define AST_VEC_CALLINIT 25
+#define AST_VEC_CALLREST 26
+#define AST_VEC_CALLATTR 27
 #define AST_IF 28
 #define AST_IFELSE 29
 #define AST_WHILE 30
 #define AST_PRINT 31
 #define AST_READ 32
 #define AST_RETURN 33
-#define AST_VEC 34
+#define AST_VEC_CALL 34
 #define AST_ARGL 36
 #define AST_ARGLREST 37
-#define AST_FUNC 38
+#define AST_FUNC_CALL 38
 #define AST_PRINTWDECL 39
 #define AST_CMDBLOCK 40
 #define AST_LCMDINIT 41
@@ -61,6 +60,7 @@
 typedef struct astnode 
 {
     int type;
+    int datatype;
     hash_node *symbol;
     struct astnode*son[MAX_SONS];
 } AST;

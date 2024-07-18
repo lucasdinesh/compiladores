@@ -33,7 +33,6 @@ void astPrint(AST *node, int level)
         case AST_SUB: fprintf(stderr, "AST_SUB "); break;
         case AST_DIV: fprintf(stderr, "AST_DIV "); break;
         case AST_MULT: fprintf(stderr, "AST_MULT "); break;
-        case AST_PERCENT: fprintf(stderr, "AST_PERCENT "); break;
         case AST_GREATHER: fprintf(stderr, "AST_GREATHER "); break;
         case AST_LESS: fprintf(stderr, "AST_LESS "); break;
         case AST_AND: fprintf(stderr, "AST_AND "); break;
@@ -52,19 +51,19 @@ void astPrint(AST *node, int level)
         case AST_TYPEINT: fprintf(stderr, "AST_TPINT "); break;
         case AST_TYPEFLOAT: fprintf(stderr, "AST_TPFLOAT "); break;
         case AST_TYPEBOOL: fprintf(stderr, "AST_TPBOOL "); break;
-        case AST_VECINIT: fprintf(stderr, "AST_VECINIT "); break;
-        case AST_VECREST: fprintf(stderr, "AST_VECREST "); break;
-        case AST_VECATTR: fprintf(stderr, "AST_VECATTR "); break;
+        case AST_VEC_CALLINIT: fprintf(stderr, "AST_VEC_CALLINIT "); break;
+        case AST_VEC_CALLREST: fprintf(stderr, "AST_VEC_CALLREST "); break;
+        case AST_VEC_CALLATTR: fprintf(stderr, "AST_VEC_CALLATTR "); break;
         case AST_IF: fprintf(stderr, "AST_IF "); break;
         case AST_IFELSE: fprintf(stderr, "AST_IFELSE "); break;
         case AST_WHILE: fprintf(stderr, "AST_WHILE "); break;
         case AST_PRINT: fprintf(stderr, "AST_PRINT "); break;
         case AST_READ: fprintf(stderr, "AST_READ "); break;
         case AST_RETURN: fprintf(stderr, "AST_RETURN "); break;
-        case AST_VEC: fprintf(stderr, "AST_VEC "); break;
+        case AST_VEC_CALL: fprintf(stderr, "AST_VEC_CALL "); break;
         case AST_ARGL: fprintf(stderr, "AST_ARGL "); break;
         case AST_ARGLREST: fprintf(stderr, "AST_ARGLREST "); break;
-        case AST_FUNC: fprintf(stderr, "AST_FUNC "); break;
+        case AST_FUNC_CALL: fprintf(stderr, "AST_FUNC_CALL "); break;
         case AST_PRINTWDECL: fprintf(stderr, "AST_PRINTWDECL "); break;
         case AST_CMDBLOCK: fprintf(stderr, "AST_CMDBLOCK "); break;
         case AST_LCMDINIT: fprintf(stderr, "AST_LCMDINIT "); break;
@@ -142,14 +141,14 @@ void uncompileAST(AST *node, FILE *file){
       fprintf(file, " %s ", node->symbol->text);
       break;
 
-    case AST_VECINIT :
+    case AST_VEC_CALLINIT :
       fprintf(file, " : ");
       uncompileAST(node->son[0], file);
       fprintf(file, " ");
       uncompileAST(node->son[1], file);
       break;
 
-    case AST_VECREST :
+    case AST_VEC_CALLREST :
       uncompileAST(node->son[0], file);
       fprintf(file, " ");
       uncompileAST(node->son[1], file);
@@ -193,7 +192,7 @@ void uncompileAST(AST *node, FILE *file){
       fprintf(file, ";\n");
       break;
 
-    case AST_VECATTR :
+    case AST_VEC_CALLATTR :
       fprintf(file, "%s[", node->symbol->text);
       uncompileAST(node->son[0], file);
       fprintf(file, "] = ");
@@ -243,13 +242,13 @@ void uncompileAST(AST *node, FILE *file){
       uncompileAST(node->son[1], file);
       break;
 
-    case AST_VEC :
+    case AST_VEC_CALL :
       fprintf(file, "%s[", node->symbol->text);
       uncompileAST(node->son[0], file);
       fprintf(file, "]");
       break;
 
-    case AST_FUNC :
+    case AST_FUNC_CALL :
       fprintf(file, "%s(", node->symbol->text);
       uncompileAST(node->son[0], file);
       fprintf(file, ")");
