@@ -18,6 +18,12 @@ int isBoolean(int datatype);
 int isInteger(int datatype);
 int validToArithmetic(int dataType);
 int isNumber(AST *node);
+void checkPrint(AST *node);
+void validateFunction(AST *node);
+AST* searchForFunctionDeclaration(char * name, AST *node);
+int getAmountOfArguments(AST *node);
+bool checkNumberOfArguments(AST *node, AST *dec);
+void checkCalledArguments(AST *node, AST *dec);
 
 
 void checkAndSetDeclarations(AST *node);
@@ -26,6 +32,7 @@ int getDatatype();
 void checkOperands(AST *node);
 void setNodeTypes(AST *node);
 int checkSemantic(AST *root);
+void checkUsage(AST *node);
 
 
 

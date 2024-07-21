@@ -31,9 +31,9 @@
 #define AST_TYPEINT 22
 #define AST_TYPEFLOAT 23
 #define AST_TYPEBOOL 24
-#define AST_VEC_CALLINIT 25
-#define AST_VEC_CALLREST 26
-#define AST_VEC_CALLATTR 27
+#define AST_VECINIT 25
+#define AST_VECREST 26
+#define AST_VECATTR 27
 #define AST_IF 28
 #define AST_IFELSE 29
 #define AST_WHILE 30

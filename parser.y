@@ -67,16 +67,16 @@
 %type<ast> cmd;
 %type<ast> options_print;
 %type<ast> expr;
-%type<ast> argl;
-%type<ast> arg_rest;
 %type<ast> literais;
 %type<ast> typos;
+%type<ast> argl;
+%type<ast> argl_rest;
+
+%start programa
 
 %%
 
 programa: decl                   {root=$$;
-
-                        astPrint(root, 0); 
                         SemanticErrors = checkSemantic(root);
                         }
 ;
@@ -91,11 +91,11 @@ dec:    typos TK_IDENTIFIER ':' literais ';'                            {$$= ast
          ;
 
 
-declvector: ':' literais restovector                                    {$$=astCreate(AST_VEC_CALLINIT, 0, $2, $3, 0, 0);}
+declvector: ':' literais restovector                                    {$$=astCreate(AST_VECINIT, 0, $2, $3, 0, 0);}
             |                           {$$=0;}
             ;
 
-restovector: literais restovector                                       {$$=astCreate(AST_VEC_CALLREST, 0, $1, $2, 0, 0);}
+restovector: literais restovector                                       {$$=astCreate(AST_VECREST, 0, $1, $2, 0, 0);}
             |                           {$$=0;}
             ; 
 
@@ -118,7 +118,7 @@ lcmd: cmd lcmd                                  {$$=astCreate(AST_LCMDINIT, 0, $
     ;
 
 cmd: TK_IDENTIFIER '=' expr ';'                 {$$= astCreate(AST_ATTR,$1,$3,0,0,0);}  
-    | TK_IDENTIFIER '['expr']' '=' expr ';'     {$$= astCreate(AST_VEC_CALLATTR,$1,$3,$6,0,0);}  
+    | TK_IDENTIFIER '['expr']' '=' expr ';'     {$$= astCreate(AST_VECATTR,$1,$3,$6,0,0);}  
     | KW_IF '(' expr ')' cmd                    {$$= astCreate(AST_IF,0,$3,$5,0,0);}
     | KW_IF '(' expr ')' cmd KW_ELSE cmd        {$$= astCreate(AST_IFELSE,0,$3,$5,$7,0);}
     | KW_WHILE '(' expr ')' cmd                 {$$= astCreate(AST_WHILE,0,$3,$5,0,0);}
@@ -126,7 +126,7 @@ cmd: TK_IDENTIFIER '=' expr ';'                 {$$= astCreate(AST_ATTR,$1,$3,0,
     | KW_READ typos TK_IDENTIFIER ';'           {$$=astCreate(AST_READ, $3, $2, 0, 0, 0);}
     | KW_RETURN expr ';'                        {$$=astCreate(AST_RETURN, 0, $2, 0, 0, 0);}
     | cmd_block                                 {$$=$1;}
-    | ';'                                       {$$ = astCreate(AST_SEMICOLON, 0, 0, 0, 0, 0);}
+    | ';'                                       {$$=astCreate(AST_SEMICOLON, 0, 0, 0, 0, 0);}
     ;
 
 
@@ -154,11 +154,11 @@ expr: TK_IDENTIFIER '['expr']'          {$$= astCreate(AST_VEC_CALL,$1,$3,0,0,0)
      | TK_IDENTIFIER '(' argl ')'       {$$=astCreate(AST_FUNC_CALL, $1, $3, 0, 0, 0);}                      
      ;
 
-argl: expr arg_rest                     {astCreate(AST_ARGL, 0, $1, $2, 0, 0);}
+argl: expr argl_rest                     {$$=astCreate(AST_ARGL, 0, $1, $2, 0, 0);}
       |                                     {$$=0;}
       ;
 
-arg_rest: ',' expr arg_rest             {astCreate(AST_ARGLREST, 0, $2, $3, 0, 0);}
+argl_rest: ',' expr argl_rest             {$$=astCreate(AST_ARGLREST, 0, $2, $3, 0, 0);}
         |                               {$$=0;}
         ;
 

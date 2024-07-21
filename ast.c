@@ -51,9 +51,9 @@ void astPrint(AST *node, int level)
         case AST_TYPEINT: fprintf(stderr, "AST_TPINT "); break;
         case AST_TYPEFLOAT: fprintf(stderr, "AST_TPFLOAT "); break;
         case AST_TYPEBOOL: fprintf(stderr, "AST_TPBOOL "); break;
-        case AST_VEC_CALLINIT: fprintf(stderr, "AST_VEC_CALLINIT "); break;
-        case AST_VEC_CALLREST: fprintf(stderr, "AST_VEC_CALLREST "); break;
-        case AST_VEC_CALLATTR: fprintf(stderr, "AST_VEC_CALLATTR "); break;
+        case AST_VECINIT: fprintf(stderr, "AST_VECINIT "); break;
+        case AST_VECREST: fprintf(stderr, "AST_VECREST "); break;
+        case AST_VECATTR: fprintf(stderr, "AST_VECATTR "); break;
         case AST_IF: fprintf(stderr, "AST_IF "); break;
         case AST_IFELSE: fprintf(stderr, "AST_IFELSE "); break;
         case AST_WHILE: fprintf(stderr, "AST_WHILE "); break;
@@ -141,14 +141,14 @@ void uncompileAST(AST *node, FILE *file){
       fprintf(file, " %s ", node->symbol->text);
       break;
 
-    case AST_VEC_CALLINIT :
+    case AST_VECINIT :
       fprintf(file, " : ");
       uncompileAST(node->son[0], file);
       fprintf(file, " ");
       uncompileAST(node->son[1], file);
       break;
 
-    case AST_VEC_CALLREST :
+    case AST_VECREST :
       uncompileAST(node->son[0], file);
       fprintf(file, " ");
       uncompileAST(node->son[1], file);
@@ -192,7 +192,7 @@ void uncompileAST(AST *node, FILE *file){
       fprintf(file, ";\n");
       break;
 
-    case AST_VEC_CALLATTR :
+    case AST_VECATTR :
       fprintf(file, "%s[", node->symbol->text);
       uncompileAST(node->son[0], file);
       fprintf(file, "] = ");

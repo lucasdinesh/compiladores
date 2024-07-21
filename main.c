@@ -36,8 +36,6 @@ int main(int argc, char *argv[]){
 
     yyparse();
 
-    hashPrint();
-
 	fprintf(stderr, "Compiled Successfully.\n");
 
 	fprintf(stderr, "Uncompiling!\n");

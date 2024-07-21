@@ -1,16 +1,17 @@
 #include "semantic.h"
+#include <string.h>
 
 int semanticErrors = 0;
 AST *ROOT;
 
 int checkSemantic(AST *root)
-{
+{   
     ROOT = root;
-
     checkAndSetDeclarations(root);
     checkUndeclared();
     checkOperands(root);
     setNodeTypes(root);
+    checkUsage(root);
 
     return semanticErrors;
 }
@@ -100,6 +101,9 @@ void checkAndSetDeclarations(AST *node)
         else
             fprintf(stderr, "node has symbol null");
         break;
+    case AST_SYMBOL:
+        node->symbol->datatype = getDatatype(node);
+        break;
     default:
         break;
     }
@@ -115,7 +119,7 @@ void checkUndeclared()
 
 int isInteger(int datatype)
 {
-    return (datatype == DATATYPE_INT);
+    return (datatype == DATATYPE_INT || isChar(datatype));
 }
 
 int isFloat(int datatype)
@@ -193,7 +197,6 @@ void setNodeTypes(AST *node)
         AST *son1 = node->son[1];
         if (!isDatatypeCompatible(son0->datatype, son1->datatype) || isBoolean(son0->datatype) || isBoolean(son1->datatype))
         {
-
             fprintf(stderr, "SEMANTIC ERROR: Arithmetic operation with incompatible data types.\n");
             semanticErrors++;
         }
@@ -311,3 +314,169 @@ void checkOperands(AST *node)
     for (i = 0; i < MAX_SONS; i++)
         checkOperands(node->son[i]);
 }
+
+void checkUsage(AST *node){
+    if (node == NULL)
+        return;
+
+    switch (node->type)
+    {
+    case AST_ATTR:
+        if (node->symbol->type != SYMBOL_VARIABLE)
+        {
+            fprintf(stderr, "SEMANTIC ERROR: Attribution must be to a scalar variable.\n");
+            semanticErrors++;
+        }
+        if (!isDatatypeCompatible(node->symbol->datatype, node->son[0]->datatype))
+        {
+            fprintf(stderr, "SEMANTIC ERROR: Attribution with incompatible data type.\n");
+            semanticErrors++;
+        }
+        break;
+    case AST_VECATTR:
+        if (node->symbol->type != SYMBOL_VECTOR)
+        {
+            fprintf(stderr, "SEMANTIC ERROR: Indexing only allowed for vectors.\n");
+            semanticErrors++;
+        }
+        if (!isDatatypeCompatible(node->symbol->datatype, node->son[1]->datatype))
+        {
+            fprintf(stderr, "SEMANTIC ERROR: Attribution with incompatible data type.\n");
+            semanticErrors++;
+        }
+        if (!isInteger(node->son[0]->datatype))
+        {
+            fprintf(stderr, "SEMANTIC ERROR: Index must be an integer.\n");
+            semanticErrors++;
+        }
+        break;
+    case AST_FUNC_CALL:
+        validateFunction(node);
+        break;
+    case AST_READ:
+        if (node->symbol->type != SYMBOL_VARIABLE)
+        {
+            fprintf(stderr, "SEMANTIC ERROR: read only allowed to scalar variables.\n");
+            semanticErrors++;
+        }
+            break;
+        case AST_PRINT:
+            checkPrint(node->son[0]);
+            break;
+        case AST_IF:
+        case AST_IFELSE:
+        case AST_WHILE:
+            if (node->son[0]->datatype != DATATYPE_BOOL)
+            {
+                fprintf(stderr, "SEMANTIC ERROR: Condition must be a boolean expression.\n");
+                semanticErrors++;
+            }
+            break;
+        default:
+            break;
+    }
+
+        for (int i = 0; i < MAX_SONS; i++)
+            checkUsage(node->son[i]);
+}    
+
+    void checkPrint(AST * node)
+    {
+        if (node == NULL)
+            return;
+        if (node->type != AST_PRINTWDECL)
+            return;
+
+        if (!isDatatypeCompatible(getDatatype(node->son[0]), node->son[1]->datatype))
+        {
+            fprintf(stderr, "SEMANTIC ERROR: invalid print type argument.\n");
+            semanticErrors++;
+        }
+    }
+
+    void validateFunction(AST * node)
+    {
+        AST *dec = searchForFunctionDeclaration(node->symbol->text, ROOT);
+        if (dec == NULL)
+        {
+            fprintf(stderr, "SEMANTIC ERROR: Just functions can be called.\n");
+            semanticErrors++;
+        }
+        else if (checkNumberOfArguments(node, dec))
+        {
+            checkCalledArguments(node->son[0], dec->son[1]);
+        }
+    }
+
+    AST *searchForFunctionDeclaration(char *name, AST *node)
+    {   
+
+
+        if(node->symbol != NULL && node->type == AST_DECFUNC && strcmp(node->symbol->text, name) == 0){
+            return node;
+        }
+
+        for (int i = 0; i < MAX_SONS; i++)
+        {
+            if (node->son[i] == NULL)
+                return NULL;
+            
+            
+            AST *searching = searchForFunctionDeclaration(name, node->son[i]);
+            if (searching != NULL)
+                return searching;
+            
+        }
+        return NULL;    
+    }
+
+    int getAmountOfArguments(AST * node)
+    {
+        if (node == NULL)
+            return 0;
+        if (node->son[1] != NULL)
+            return 1 + getAmountOfArguments(node->son[1]);
+        else
+            return 0;
+    }
+
+    bool checkNumberOfArguments(AST * node, AST * dec)
+    {
+        int calledArguments = getAmountOfArguments(node->son[0]);
+        int declaredArguements = getAmountOfArguments(dec->son[1]);
+        if (calledArguments != declaredArguements)
+        {
+            fprintf(stderr, "SEMATIC ERROR: Incompatible number of arguments.\n");
+            semanticErrors++;
+            return false;
+        }
+        return true;
+    }
+
+    void checkCalledArguments(AST * node, AST * dec)
+    {
+        if (node->son[0] != NULL)
+        {
+            if (!isDatatypeCompatible(node->son[0]->datatype, dec->son[0]->symbol->datatype))
+            {
+                fprintf(stderr, "SEMANTIC ERROR: Incompatible argument types\n");
+                semanticErrors++;
+            }
+            if (node->son[0]->type == AST_SYMBOL)
+            {
+                if (node->son[0]->symbol->type == SYMBOL_VECTOR)
+                {
+                    fprintf(stderr, "SEMANTIC ERROR: Cannot pass vector as argument\n");
+                    semanticErrors++;
+                }
+
+                else if (node->son[0]->symbol->type == SYMBOL_FUNCTION)
+                {
+                    fprintf(stderr, "SEMANTIC ERROR: Cannot pass function as argument\n");
+                    semanticErrors++;
+                }
+            }
+            if (node->son[1] != NULL)
+                checkCalledArguments(node->son[1], dec->son[1]);
+        }
+    }

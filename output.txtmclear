@@ -1,0 +1,14 @@
+int a : 15 ;
+bool b : true ;
+char c : 'x' ;
+char d : 100 ;
+int number : 'A' ;
+int i : 1 ;
+int v[ 10 ] :  'a'   0   'b'   0   0   0   0   0   0   0  ;
+int matrix[ 100 ];
+float f : 2.5 ;
+int main(){
+i = incn( d );
+}int incn(int x, int n){
+return  x  +  n ;
+}
