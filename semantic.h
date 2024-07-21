@@ -24,6 +24,7 @@ AST* searchForFunctionDeclaration(char * name, AST *node);
 int getAmountOfArguments(AST *node);
 bool checkNumberOfArguments(AST *node, AST *dec);
 void checkCalledArguments(AST *node, AST *dec);
+void isReturnCompatible(AST *node, int datatype);
 
 
 void checkAndSetDeclarations(AST *node);
@@ -33,6 +34,7 @@ void checkOperands(AST *node);
 void setNodeTypes(AST *node);
 int checkSemantic(AST *root);
 void checkUsage(AST *node);
+void checkReturns(AST * node);
 
 
 
