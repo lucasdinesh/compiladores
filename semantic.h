@@ -7,7 +7,7 @@
 
 extern int semanticErrors;
 
-//DATATYPÈ CHECK
+//DATATYPE CHECK
 int isDatatypeCompatible(int datatype1, int datatype2);
 int isLogicalOperation(int nodetype);
 int isRelationalOperation(int nodetype);

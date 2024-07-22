@@ -42,6 +42,8 @@ int main(int argc, char *argv[]){
 
 	uncompileAST(getAST(), output);
 
+	fprintf(stderr, "Uncompiled Successfully!\n");
+
 	fclose(output);
 
 	checkSemanticErrors();

@@ -11,6 +11,7 @@ int checkSemantic(AST *root)
     checkUndeclared();
     checkOperands(root);
     setNodeTypes(root);
+    astPrint(root, 0);
     checkUsage(root);
     checkReturns(root);
 
@@ -354,6 +355,13 @@ void checkUsage(AST *node)
         break;
     case AST_FUNC_CALL:
         validateFunction(node);
+        break;
+    case AST_VEC_CALL:
+    if (node->symbol->type != SYMBOL_VECTOR)
+        {
+            fprintf(stderr, "SEMANTIC ERROR: only vector should be accessed with index\n");
+            semanticErrors++;
+        }    
         break;
     case AST_READ:
         if (node->symbol->type != SYMBOL_VARIABLE)
