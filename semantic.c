@@ -7,10 +7,10 @@ AST *ROOT;
 int checkSemantic(AST *root)
 {
     ROOT = root;
+    setNodeTypes(root);
     checkAndSetDeclarations(root);
     checkUndeclared();
     checkOperands(root);
-    setNodeTypes(root);
     astPrint(root, 0);
     checkUsage(root);
     checkReturns(root);
@@ -22,6 +22,7 @@ int getDatatype(AST *son)
 {
     if (son)
     {
+
         switch (son->type)
         {
         case AST_TYPEINT:
@@ -31,6 +32,28 @@ int getDatatype(AST *son)
         case AST_TYPEFLOAT:
             return DATATYPE_FLOAT;
         case AST_TYPECHAR:
+            return DATATYPE_CHAR;
+        default:
+            break;
+        }
+    }
+}
+
+int getDatatypeFromHash(hash_node *hashNode)
+{
+    if (hashNode)
+    {
+
+        switch (hashNode->type)
+        {
+        case SYMBOL_LIT_INTEGER:
+            return DATATYPE_INT;
+        case SYMBOL_LIT_FALSE:
+        case SYMBOL_LIT_TRUE:
+            return DATATYPE_BOOL;
+        case SYMBOL_LIT_REAL:
+            return DATATYPE_FLOAT;
+        case SYMBOL_LIT_CHAR:
             return DATATYPE_CHAR;
         default:
             break;
@@ -85,7 +108,11 @@ void checkAndSetDeclarations(AST *node)
             }
             node->symbol->type = SYMBOL_VECTOR;
             node->symbol->datatype = getDatatype(node->son[0]);
+            int lenghtVector = atoi(node->son[1]->symbol->text);
+
+            checkVector(node->son[2], node->symbol->datatype, lenghtVector);
         }
+
         else
             fprintf(stderr, "node has symbol null");
         break;
@@ -112,6 +139,30 @@ void checkAndSetDeclarations(AST *node)
 
     for (i = 0; i < MAX_SONS; i++)
         checkAndSetDeclarations(node->son[i]);
+}
+
+void checkVector(AST *node, int vecDataType, int vecLenght)
+{ 
+    if(vecLenght < 0){
+            fprintf(stderr, "SEMANTIC ERROR: Exceeded numbers of items on vector\n");
+            semanticErrors++;
+    }
+    if (node == NULL)
+        return;
+
+    else if (node->son[0])
+    {
+        if (!isDatatypeCompatible(getDatatypeFromHash(node->son[0]->symbol), vecDataType))
+        {
+            fprintf(stderr, "SEMANTIC ERROR:  value has dataType incompatible with Vector DataType\n");
+            semanticErrors++;
+        }
+        else
+        {   
+            vecLenght--;
+            checkVector(node->son[1], vecDataType, vecLenght);
+        }
+    }
 }
 
 void checkUndeclared()
@@ -357,11 +408,12 @@ void checkUsage(AST *node)
         validateFunction(node);
         break;
     case AST_VEC_CALL:
-    if (node->symbol->type != SYMBOL_VECTOR)
+        if (node->symbol->type != SYMBOL_VECTOR)
         {
             fprintf(stderr, "SEMANTIC ERROR: only vector should be accessed with index\n");
             semanticErrors++;
-        }    
+        }
+        if(AST_VEC_CALL)
         break;
     case AST_READ:
         if (node->symbol->type != SYMBOL_VARIABLE)
@@ -489,30 +541,35 @@ void checkCalledArguments(AST *node, AST *dec)
     }
 }
 
-void isReturnCompatible(AST *node, int datatype){
-	if(node == NULL) return;
-	if(node->type == AST_RETURN){
-		if(!isDatatypeCompatible(node->son[0]->datatype, datatype)){
-			printf("SEMANTIC ERROR: Return statement with wrong datatype.\n");
-			semanticErrors++;
-		}
-	}
-	for(int i = 0; i < MAX_SONS; i++){
-		isReturnCompatible(node->son[i], datatype);
-	}
-}
-
-    void checkReturns(AST * node)
+void isReturnCompatible(AST *node, int datatype)
+{
+    if (node == NULL)
+        return;
+    if (node->type == AST_RETURN)
     {
-        if (node != NULL && node->type == AST_DECFUNC)
+        if (!isDatatypeCompatible(node->son[0]->datatype, datatype))
         {
-            isReturnCompatible(node, node->symbol->datatype);
-        }
-
-        for (int i = 0; i < MAX_SONS; i++)
-        {
-            if (node->son[i] == NULL)
-                break;
-            checkReturns(node->son[i]);
+            printf("SEMANTIC ERROR: Return statement with wrong datatype.\n");
+            semanticErrors++;
         }
     }
+    for (int i = 0; i < MAX_SONS; i++)
+    {
+        isReturnCompatible(node->son[i], datatype);
+    }
+}
+
+void checkReturns(AST *node)
+{
+    if (node != NULL && node->type == AST_DECFUNC)
+    {
+        isReturnCompatible(node, node->symbol->datatype);
+    }
+
+    for (int i = 0; i < MAX_SONS; i++)
+    {
+        if (node->son[i] == NULL)
+            break;
+        checkReturns(node->son[i]);
+    }
+}

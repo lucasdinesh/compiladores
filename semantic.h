@@ -25,6 +25,8 @@ int getAmountOfArguments(AST *node);
 bool checkNumberOfArguments(AST *node, AST *dec);
 void checkCalledArguments(AST *node, AST *dec);
 void isReturnCompatible(AST *node, int datatype);
+void checkVector(AST *node, int vecDataType, int vecLenght);
+int getDatatypeFromHash(hash_node *hashNode);
 
 
 void checkAndSetDeclarations(AST *node);
