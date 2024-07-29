@@ -1,8 +1,8 @@
 #  Etapa 4 - Compiladores 2024/1
 #      Autor: Lucas Dinesh
 
-etapa4: y.tab.o lex.yy.o main.o hash.o ast.o semantic.o
-	gcc main.o lex.yy.o y.tab.o hash.o ast.o semantic.o -o etapa4
+etapa5: y.tab.o lex.yy.o main.o hash.o ast.o semantic.o tacs.o
+	gcc main.o lex.yy.o y.tab.o hash.o ast.o semantic.o tacs.o -o etapa5
 main.o: main.c
 	gcc -c main.c
 semantic.o: semantic.c
@@ -19,5 +19,7 @@ y.tab.c: parser.y
 	yacc parser.y -d -v
 lex.yy.c: scanner.l
 	lex scanner.l 
+tacs.o: tacs.c
+	gcc -c tacs.c
 clean:
-	rm *.o lex.yy.c lex.yy.h y.tab.c y.output y.tab.h etapa4
+	rm *.o lex.yy.c lex.yy.h y.tab.c y.output y.tab.h etapa5

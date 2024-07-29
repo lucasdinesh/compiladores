@@ -7,11 +7,10 @@ AST *ROOT;
 int checkSemantic(AST *root)
 {
     ROOT = root;
-    setNodeTypes(root);
     checkAndSetDeclarations(root);
     checkUndeclared();
     checkOperands(root);
-    astPrint(root, 0);
+    setNodeTypes(root);
     checkUsage(root);
     checkReturns(root);
 
@@ -142,10 +141,11 @@ void checkAndSetDeclarations(AST *node)
 }
 
 void checkVector(AST *node, int vecDataType, int vecLenght)
-{ 
-    if(vecLenght < 0){
-            fprintf(stderr, "SEMANTIC ERROR: Exceeded numbers of items on vector\n");
-            semanticErrors++;
+{
+    if (vecLenght < 0)
+    {
+        fprintf(stderr, "SEMANTIC ERROR: Exceeded numbers of items on vector\n");
+        semanticErrors++;
     }
     if (node == NULL)
         return;
@@ -158,7 +158,7 @@ void checkVector(AST *node, int vecDataType, int vecLenght)
             semanticErrors++;
         }
         else
-        {   
+        {
             vecLenght--;
             checkVector(node->son[1], vecDataType, vecLenght);
         }
@@ -413,8 +413,8 @@ void checkUsage(AST *node)
             fprintf(stderr, "SEMANTIC ERROR: only vector should be accessed with index\n");
             semanticErrors++;
         }
-        if(AST_VEC_CALL)
-        break;
+        if (AST_VEC_CALL)
+            break;
     case AST_READ:
         if (node->symbol->type != SYMBOL_VARIABLE)
         {

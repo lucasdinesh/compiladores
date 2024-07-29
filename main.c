@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "ast.h"
+#include "tacs.h"
 #include "semantic.h"
 
 int yylex();
@@ -13,6 +13,7 @@ extern void hashPrint();
 extern int yyparse(); 
 extern AST *getAST();
 extern int checkSemanticErrors();
+extern tac *getTACS();
 
 int main(int argc, char *argv[]){
 	FILE *output;  
@@ -47,6 +48,8 @@ int main(int argc, char *argv[]){
 	fclose(output);
 
 	checkSemanticErrors();
+
+	printAllTacs(getTACS());
 
     exit(0);
 }

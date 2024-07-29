@@ -86,3 +86,17 @@ int hash_check_undeclared(void)
     }
     return undeclared;
 }
+
+hash_node * makeTemp(){
+	static int serialNumber = 0;
+	static char buffer[128];
+	sprintf(buffer, "mYWeeirT_emp%d", serialNumber++);
+	return hashInsert(SYMBOL_IDENTIFIER, buffer);
+}
+
+hash_node * makeLabel(){
+	static int serialNumber = 0;
+	static char buffer[128];
+	sprintf(buffer, "mYLabe_l%d", serialNumber++);
+	return hashInsert(SYMBOL_IDENTIFIER, buffer);
+}

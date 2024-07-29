@@ -34,5 +34,7 @@ hash_node* hashFind(char *text);
 int hashAddress(char *text);
 void hashPrint(void);
 int hash_check_undeclared(void);
+hash_node* makeTemp();
+hash_node* makeLabel();
 
 #endif

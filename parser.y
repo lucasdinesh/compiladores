@@ -4,6 +4,7 @@
         #include "hash.h"
         #include "ast.h"
         #include "semantic.h"
+        #include "tacs.h"
 
 
 	int yylex();
@@ -190,4 +191,9 @@ void checkSemanticErrors(){
     fprintf(stderr, "\nCompilation finished with %d semantic errors.\n", SemanticErrors);
     exit(4);
   }
+
+    }
+
+  tac* getTACS(){
+  return rewindTac(createTacs(root, 0));
 }

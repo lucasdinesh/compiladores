@@ -10,6 +10,7 @@ AST *astCreate(int type, hash_node *symbol, AST* s0, AST* s1, AST* s2, AST* s3){
     newnode->son[0] = s0;
     newnode->son[1] = s1;
     newnode->son[2] = s2;
+
     newnode->son[3] = s3;
     return newnode;
     
