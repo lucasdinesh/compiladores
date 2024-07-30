@@ -48,9 +48,9 @@ void astPrint(AST *node, int level)
         case AST_GE: fprintf(stderr, "AST_GE "); break;
         case AST_EQ: fprintf(stderr, "AST_EQ "); break;
         case AST_DIF: fprintf(stderr, "AST_DIF "); break;
-        case AST_TYPECHAR: fprintf(stderr, "AST_TPBYTE "); break;
-        case AST_TYPEINT: fprintf(stderr, "AST_TPINT "); break;
-        case AST_TYPEFLOAT: fprintf(stderr, "AST_TPFLOAT "); break;
+        case AST_TYPECHAR: fprintf(stderr, "AST_TYPEBYTE "); break;
+        case AST_TYPEINT: fprintf(stderr, "AST_TYPEINT "); break;
+        case AST_TYPEFLOAT: fprintf(stderr, "AST_TYPEFLOAT "); break;
         case AST_TYPEBOOL: fprintf(stderr, "AST_TPBOOL "); break;
         case AST_VECINIT: fprintf(stderr, "AST_VECINIT "); break;
         case AST_VECREST: fprintf(stderr, "AST_VECREST "); break;

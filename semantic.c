@@ -36,28 +36,7 @@ int getDatatype(AST *son)
             break;
         }
     }
-}
-
-int getDatatypeFromHash(hash_node *hashNode)
-{
-    if (hashNode)
-    {
-
-        switch (hashNode->type)
-        {
-        case SYMBOL_LIT_INTEGER:
-            return DATATYPE_INT;
-        case SYMBOL_LIT_FALSE:
-        case SYMBOL_LIT_TRUE:
-            return DATATYPE_BOOL;
-        case SYMBOL_LIT_REAL:
-            return DATATYPE_FLOAT;
-        case SYMBOL_LIT_CHAR:
-            return DATATYPE_CHAR;
-        default:
-            break;
-        }
-    }
+    return 0;
 }
 
 void checkAndSetDeclarations(AST *node)
@@ -129,9 +108,6 @@ void checkAndSetDeclarations(AST *node)
         else
             fprintf(stderr, "node has symbol null");
         break;
-    case AST_SYMBOL:
-        node->symbol->datatype = getDatatype(node);
-        break;
     default:
         break;
     }
@@ -152,7 +128,7 @@ void checkVector(AST *node, int vecDataType, int vecLenght)
 
     else if (node->son[0])
     {
-        if (!isDatatypeCompatible(getDatatypeFromHash(node->son[0]->symbol), vecDataType))
+        if (!isDatatypeCompatible(node->son[0]->symbol->datatype, vecDataType))
         {
             fprintf(stderr, "SEMANTIC ERROR:  value has dataType incompatible with Vector DataType\n");
             semanticErrors++;
@@ -236,7 +212,7 @@ void setNodeTypes(AST *node)
         node->datatype = node->symbol->datatype;
     }
     else if (node->type == AST_FUNC_CALL || node->type == AST_VEC_CALL)
-    {
+    {   
         node->datatype = node->symbol->datatype;
     }
     else if (node->type == AST_PAREN)
@@ -296,10 +272,17 @@ int validToArithmetic(int dataType)
 }
 
 int isNumber(AST *son)
-{
-    // VALID FOR ARITHMETIC METHODS
-    if (
-        (son->type == AST_ADD || son->type == AST_SUB || son->type == AST_DIV || son->type == AST_MULT || (son->type == AST_SYMBOL && ((son->symbol->type == SYMBOL_LIT_INTEGER || ((son->symbol->type == SYMBOL_VARIABLE || son->symbol->type == SYMBOL_PARAMETER) && isInteger(son->symbol->datatype))) || (son->symbol->type == SYMBOL_LIT_REAL || ((son->symbol->type == SYMBOL_VARIABLE || son->symbol->type == SYMBOL_PARAMETER) && isFloat(son->symbol->datatype))) || (son->symbol->type == SYMBOL_LIT_CHAR || ((son->symbol->type == SYMBOL_VARIABLE || son->symbol->type == SYMBOL_PARAMETER) && isChar(son->symbol->datatype))))) || (son->type == AST_FUNC_CALL && validToArithmetic(son->symbol->datatype))))
+{   
+    
+    if 
+        (son->type == AST_ADD || son->type == AST_SUB || son->type == AST_DIV || son->type == AST_MULT
+        || (son->type == AST_SYMBOL && (
+            (son->symbol->type == SYMBOL_LIT_INTEGER || ((son->symbol->type == SYMBOL_VARIABLE || son->symbol->type == SYMBOL_PARAMETER) && isInteger(son->symbol->datatype))) 
+        || (son->symbol->type == SYMBOL_LIT_REAL || ((son->symbol->type == SYMBOL_VARIABLE || son->symbol->type == SYMBOL_PARAMETER) && isFloat(son->symbol->datatype))) 
+        || (son->symbol->type == SYMBOL_LIT_CHAR || ((son->symbol->type == SYMBOL_VARIABLE || son->symbol->type == SYMBOL_PARAMETER) && isChar(son->symbol->datatype)))
+        )) 
+        || (son->type == AST_FUNC_CALL && validToArithmetic(son->symbol->datatype))
+        || (son->type == AST_VEC_CALL && validToArithmetic(son->symbol->datatype)))
         return 1;
     else
         return 0;
@@ -322,6 +305,10 @@ void checkOperands(AST *node)
         }
         if (!(isNumber(node->son[1])))
         {
+            astPrint(node->son[1], 0);
+
+            fprintf(stderr, "node->son[1]->symbol->datatype: %d, node->son[1]->type:%d, node->son[1]->symbol->type: %d \n",node->son[1]->datatype
+            , node->son[1]->type, node->son[1]->symbol->type);
             fprintf(stderr, "SEMANTIC ERROR: operation right operand for ADD \n");
             semanticErrors++;
         }
@@ -413,7 +400,6 @@ void checkUsage(AST *node)
             fprintf(stderr, "SEMANTIC ERROR: only vector should be accessed with index\n");
             semanticErrors++;
         }
-        if (AST_VEC_CALL)
             break;
     case AST_READ:
         if (node->symbol->type != SYMBOL_VARIABLE)
@@ -448,7 +434,7 @@ void checkPrint(AST *node)
         return;
     if (node->type != AST_PRINTWDECL)
         return;
-
+    
     if (!isDatatypeCompatible(getDatatype(node->son[0]), node->son[1]->datatype))
     {
         fprintf(stderr, "SEMANTIC ERROR: invalid print type argument.\n");

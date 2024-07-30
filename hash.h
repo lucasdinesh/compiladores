@@ -36,5 +36,6 @@ void hashPrint(void);
 int hash_check_undeclared(void);
 hash_node* makeTemp();
 hash_node* makeLabel();
+int getDatatypeFromHash(int type);
 
 #endif

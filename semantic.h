@@ -7,7 +7,6 @@
 
 extern int semanticErrors;
 
-//DATATYPE CHECK
 int isDatatypeCompatible(int datatype1, int datatype2);
 int isLogicalOperation(int nodetype);
 int isRelationalOperation(int nodetype);
@@ -26,8 +25,6 @@ bool checkNumberOfArguments(AST *node, AST *dec);
 void checkCalledArguments(AST *node, AST *dec);
 void isReturnCompatible(AST *node, int datatype);
 void checkVector(AST *node, int vecDataType, int vecLenght);
-int getDatatypeFromHash(hash_node *hashNode);
-
 
 void checkAndSetDeclarations(AST *node);
 void checkUndeclared();

@@ -1,0 +1,5 @@
+ astPrint(node, 0);
+    fprintf(stderr, "checkPRINT: son->type: %d, son->symbol->text: %s, node->son[1]->symbol->datatype: %d, node->son[1]->datatype: %d, node->son[1]->symbol->type:%d \n", node->son[1]->type, node->son[1]->symbol->text, node->son[1]->symbol->datatype, node->son[1]->datatype, node->son[1]->symbol->type);
+
+
+        fprintf(stderr, "node->symbol->datatype: %d\n",node->symbol->datatype );
