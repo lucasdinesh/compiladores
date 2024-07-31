@@ -10,7 +10,7 @@ int checkSemantic(AST *root)
     checkAndSetDeclarations(root);
     checkUndeclared();
     checkOperands(root);
-    setNodeTypes(root);
+    assignAndValidateNodeTypes(root);
     checkUsage(root);
     checkReturns(root);
 
@@ -191,78 +191,117 @@ int isDatatypeCompatible(int datatype1, int datatype2)
     return ((isInteger(datatype1) || isChar(datatype1)) && (isInteger(datatype2) || isChar(datatype2))) || (datatype1 == datatype2);
 }
 
-void setNodeTypes(AST *node)
-{
-    if (node == NULL)
+void assignAndValidateNodeTypes(AST *node) {
+    if (node == NULL) {
         return;
-
-    for (int i = 0; i < MAX_SONS; i++)
-    {
-        setNodeTypes(node->son[i]);
     }
 
-    if (node->type == AST_SYMBOL)
-    {
-        if (node->symbol->type == SYMBOL_VECTOR || node->symbol->type == SYMBOL_FUNCTION)
-        {
+    // Recursively set types for child nodes
+    for (int i = 0; i < MAX_SONS; i++) {
+        assignAndValidateNodeTypes(node->son[i]);
+    }
 
-            fprintf(stderr, "SEMANTIC ERROR: function/vector used as scalar variable.\n");
-            semanticErrors++;
-        }
-        node->datatype = node->symbol->datatype;
-    }
-    else if (node->type == AST_FUNC_CALL || node->type == AST_VEC_CALL)
-    {   
-        node->datatype = node->symbol->datatype;
-    }
-    else if (node->type == AST_PAREN)
-    {
-        node->datatype = node->son[0]->datatype;
-    }
-    else if (isArithmeticOperation(node->type))
-    {
-
-        AST *son0 = node->son[0];
-        AST *son1 = node->son[1];
-        if (!isDatatypeCompatible(son0->datatype, son1->datatype) || isBoolean(son0->datatype) || isBoolean(son1->datatype))
-        {
-            fprintf(stderr, "SEMANTIC ERROR: Arithmetic operation with incompatible data types.\n");
-            semanticErrors++;
-        }
-        node->datatype = son0->datatype > son1->datatype ? son0->datatype : son1->datatype; // IF IS AN ARTHMETIC OPERATION WITH CHAR AND INT, USE ALWAYS INT
-    }
-    else if (isRelationalOperation(node->type))
-    {
-
-        AST *son0 = node->son[0];
-        AST *son1 = node->son[1];
-        if (!isDatatypeCompatible(son0->datatype, son1->datatype) || isBoolean(son0->datatype) || isBoolean(son1->datatype))
-        {
-            fprintf(stderr, "SEMANTIC ERROR: Relational operation with incompatible data types.\n");
-            semanticErrors++;
-        }
-        node->datatype = DATATYPE_BOOL;
-    }
-    else if (isLogicalOperation(node->type))
-    {
-        if (node->type == AST_NOT)
-        {
-            if (node->son[0]->datatype != DATATYPE_BOOL)
-            {
-                fprintf(stderr, "SEMANTIC ERROR: Logical operation with incompatible data types.\n");
+    // Handle different node types
+    switch (node->type) {
+        case AST_SYMBOL:
+            if (node->symbol == NULL) {
+                fprintf(stderr, "SEMANTIC ERROR: NULL symbol in AST_SYMBOL node.\n");
+                semanticErrors++;
+                return;
+            }
+            
+            if (node->symbol->type == SYMBOL_VECTOR || node->symbol->type == SYMBOL_FUNCTION) {
+                fprintf(stderr, "SEMANTIC ERROR: Function/vector used as scalar variable.\n");
                 semanticErrors++;
             }
-        }
-        else if (node->son[0]->datatype != DATATYPE_BOOL || node->son[1]->datatype != DATATYPE_BOOL)
-        {
-            fprintf(stderr, "SEMANTIC ERROR: Logical operation with incompatible data types.\n");
-            semanticErrors++;
-        }
-        node->datatype = DATATYPE_BOOL;
-    }
-    else if (node->datatype == AST_PRINTWDECL)
-    {
-        node->datatype = getDatatype(node->son[0]);
+            node->datatype = node->symbol->datatype;
+            break;
+
+        case AST_FUNC_CALL:
+        case AST_VEC_CALL:
+            if (node->symbol == NULL) {
+                fprintf(stderr, "SEMANTIC ERROR: NULL symbol in AST_FUNC_CALL or AST_VEC_CALL node.\n");
+                semanticErrors++;
+                return;
+            }
+            node->datatype = node->symbol->datatype;
+            break;
+
+        case AST_PAREN:
+            if (node->son[0] == NULL) {
+                fprintf(stderr, "SEMANTIC ERROR: NULL child node in AST_PAREN node.\n");
+                semanticErrors++;
+                return;
+            }
+            node->datatype = node->son[0]->datatype;
+            break;
+
+        default:
+            if (isArithmeticOperation(node->type)) {
+                if (node->son[0] == NULL || node->son[1] == NULL) {
+                    fprintf(stderr, "SEMANTIC ERROR: NULL child nodes in arithmetic operation.\n");
+                    semanticErrors++;
+                    return;
+                }
+
+                AST *son0 = node->son[0];
+                AST *son1 = node->son[1];
+
+                if (!isDatatypeCompatible(son0->datatype, son1->datatype) ||
+                    isBoolean(son0->datatype) || isBoolean(son1->datatype)) {
+                    fprintf(stderr, "SEMANTIC ERROR: Arithmetic operation with incompatible data types.\n");
+                    semanticErrors++;
+                }
+
+                node->datatype = (son0->datatype > son1->datatype) ? son0->datatype : son1->datatype;
+            }
+            else if (isRelationalOperation(node->type)) {
+                if (node->son[0] == NULL || node->son[1] == NULL) {
+                    fprintf(stderr, "SEMANTIC ERROR: NULL child nodes in relational operation.\n");
+                    semanticErrors++;
+                    return;
+                }
+
+                AST *son0 = node->son[0];
+                AST *son1 = node->son[1];
+
+                if (!isDatatypeCompatible(son0->datatype, son1->datatype) ||
+                    isBoolean(son0->datatype) || isBoolean(son1->datatype)) {
+                    fprintf(stderr, "SEMANTIC ERROR: Relational operation with incompatible data types.\n");
+                    semanticErrors++;
+                }
+
+                node->datatype = DATATYPE_BOOL;
+            }
+            else if (isLogicalOperation(node->type)) {
+                if (node->son[0] == NULL) {
+                    fprintf(stderr, "SEMANTIC ERROR: NULL child node in logical operation.\n");
+                    semanticErrors++;
+                    return;
+                }
+
+                if (node->type == AST_NOT) {
+                    if (node->son[0]->datatype != DATATYPE_BOOL) {
+                        fprintf(stderr, "SEMANTIC ERROR: Logical NOT operation with non-boolean type.\n");
+                        semanticErrors++;
+                    }
+                } else {
+                    if (node->son[0]->datatype != DATATYPE_BOOL || node->son[1]->datatype != DATATYPE_BOOL) {
+                        fprintf(stderr, "SEMANTIC ERROR: Logical operation with non-boolean types.\n");
+                        semanticErrors++;
+                    }
+                }
+                node->datatype = DATATYPE_BOOL;
+            }
+            else if (node->type == AST_PRINTWDECL) {
+                if (node->son[0] == NULL) {
+                    fprintf(stderr, "SEMANTIC ERROR: NULL child node in AST_PRINTWDECL.\n");
+                    semanticErrors++;
+                } else {
+                    node->datatype = getDatatype(node->son[0]);
+                }
+            }
+            break;
     }
 }
 
@@ -271,21 +310,51 @@ int validToArithmetic(int dataType)
     return (isInteger(dataType) || isChar(dataType) || isFloat(dataType));
 }
 
-int isNumber(AST *son)
-{   
-    
-    if 
-        (son->type == AST_ADD || son->type == AST_SUB || son->type == AST_DIV || son->type == AST_MULT
-        || (son->type == AST_SYMBOL && (
-            (son->symbol->type == SYMBOL_LIT_INTEGER || ((son->symbol->type == SYMBOL_VARIABLE || son->symbol->type == SYMBOL_PARAMETER) && isInteger(son->symbol->datatype))) 
-        || (son->symbol->type == SYMBOL_LIT_REAL || ((son->symbol->type == SYMBOL_VARIABLE || son->symbol->type == SYMBOL_PARAMETER) && isFloat(son->symbol->datatype))) 
-        || (son->symbol->type == SYMBOL_LIT_CHAR || ((son->symbol->type == SYMBOL_VARIABLE || son->symbol->type == SYMBOL_PARAMETER) && isChar(son->symbol->datatype)))
-        )) 
-        || (son->type == AST_FUNC_CALL && validToArithmetic(son->symbol->datatype))
-        || (son->type == AST_VEC_CALL && validToArithmetic(son->symbol->datatype)))
-        return 1;
-    else
-        return 0;
+bool isNumericOrArithmetic(AST *node) {
+    if (node == NULL) {
+        return false;
+    }
+
+    switch (node->type) {
+        case AST_ADD:
+        case AST_SUB:
+        case AST_DIV:
+        case AST_MULT:
+            return true;
+
+        case AST_SYMBOL: {
+            if (node->symbol == NULL) {
+                return false;
+            }
+            
+            int symbolType = node->symbol->type;
+            int symbolDataType = node->symbol->datatype;
+            
+            if (symbolType == SYMBOL_LIT_INTEGER ||
+                (symbolType == SYMBOL_VARIABLE || symbolType == SYMBOL_PARAMETER) && isInteger(symbolDataType)) {
+                return true;
+            }
+
+            if (symbolType == SYMBOL_LIT_REAL ||
+                (symbolType == SYMBOL_VARIABLE || symbolType == SYMBOL_PARAMETER) && isFloat(symbolDataType)) {
+                return true;
+            }
+
+            if (symbolType == SYMBOL_LIT_CHAR ||
+                (symbolType == SYMBOL_VARIABLE || symbolType == SYMBOL_PARAMETER) && isChar(symbolDataType)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        case AST_FUNC_CALL:
+        case AST_VEC_CALL:
+            return validToArithmetic(node->symbol ? node->symbol->datatype : 0);
+
+        default:
+            return false;
+    }
 }
 
 void checkOperands(AST *node)
@@ -298,12 +367,12 @@ void checkOperands(AST *node)
     switch (node->type)
     {
     case AST_ADD:
-        if (!(isNumber(node->son[0])))
+        if (!(isNumericOrArithmetic(node->son[0])))
         {
             fprintf(stderr, "SEMANTIC ERROR: operation left operand for ADD \n");
             semanticErrors++;
         }
-        if (!(isNumber(node->son[1])))
+        if (!(isNumericOrArithmetic(node->son[1])))
         {
             astPrint(node->son[1], 0);
 
@@ -314,36 +383,36 @@ void checkOperands(AST *node)
         }
         break;
     case AST_SUB:
-        if (!(isNumber(node->son[0])))
+        if (!(isNumericOrArithmetic(node->son[0])))
         {
             fprintf(stderr, "SEMANTIC ERROR: operation left operand for SUB \n");
             semanticErrors++;
         }
-        if (!(isNumber(node->son[1])))
+        if (!(isNumericOrArithmetic(node->son[1])))
         {
             fprintf(stderr, "SEMANTIC ERROR: operation right operand for SUB \n");
             semanticErrors++;
         }
         break;
     case AST_DIV:
-        if (!(isNumber(node->son[0])))
+        if (!(isNumericOrArithmetic(node->son[0])))
         {
             fprintf(stderr, "SEMANTIC ERROR: operation left operand for DIV \n");
             semanticErrors++;
         }
-        if (!(isNumber(node->son[1])))
+        if (!(isNumericOrArithmetic(node->son[1])))
         {
             fprintf(stderr, "SEMANTIC ERROR: operation right operand for DIV \n");
             semanticErrors++;
         }
         break;
     case AST_MULT:
-        if (!(isNumber(node->son[0])))
+        if (!(isNumericOrArithmetic(node->son[0])))
         {
             fprintf(stderr, "SEMANTIC ERROR: operation left operand for MULT \n");
             semanticErrors++;
         }
-        if (!(isNumber(node->son[1])))
+        if (!(isNumericOrArithmetic(node->son[1])))
         {
             fprintf(stderr, "SEMANTIC ERROR: operation right operand for MULT \n");
             semanticErrors++;
