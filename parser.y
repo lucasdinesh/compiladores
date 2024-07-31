@@ -195,5 +195,5 @@ void checkSemanticErrors(){
     }
 
   tac* getTACS(){
-  return rewindTac(createTacs(root, 0));
+  return reverseTacList(createTacs(root, 0));
 }

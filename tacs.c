@@ -30,19 +30,21 @@ tac *tacJoin(tac *l1, tac *l2)
 	return l2;
 }
 
+
+tac *reverseTacList(tac *head) {
+    tac *current;
+    
+    for (current = head; current->prev; current = current->prev) {
+        current->prev->next = current;
+    }
+    return current;
+}
+
 void printAllTacs(tac *l)
 {
 	tac *t;
 	for (t = l; t; t = t->next)
 		printTac(t);
-}
-
-tac *rewindTac(tac *l)
-{
-	tac *t;
-	for (t = l; t->prev; t = t->prev)
-		t->prev->next = t;
-	return t;
 }
 
 void printTac(tac *l)
@@ -69,14 +71,14 @@ void printTac(tac *l)
 	case TAC_AND:
 		fprintf(stderr, "AND(");
 		break;
-	case TAC_VEC:
-		fprintf(stderr, "VEC(");
+	case TAC_VEC_CALL:
+		fprintf(stderr, "VEC_CALL(");
 		break;
 	case TAC_GE:
 		fprintf(stderr, "GE(");
 		break;
-	case TAC_ARGPUSH:
-		fprintf(stderr, "ARGPUSH(");
+	case TAC_ARGLREST:
+		fprintf(stderr, "TAC_ARGLREST(");
 		break;
 	case TAC_CALL:
 		fprintf(stderr, "CALL(");
@@ -96,8 +98,8 @@ void printTac(tac *l)
 	case TAC_MUL:
 		fprintf(stderr, "MUL(");
 		break;
-	case TAC_RET:
-		fprintf(stderr, "RET(");
+	case TAC_RETURN:
+		fprintf(stderr, "RETURN(");
 		break;
 	case TAC_OR:
 		fprintf(stderr, "OR(");
@@ -122,9 +124,6 @@ void printTac(tac *l)
 		break;
 	case TAC_EQ:
 		fprintf(stderr, "EQ(");
-		break;
-	case TAC_PARAM:
-		fprintf(stderr, "PARAM(");
 		break;
 	case TAC_NOT:
 		fprintf(stderr, "NOT(");
@@ -178,42 +177,42 @@ tac *createTacs(AST *node, hash_node *currentLoopLabel)
 	{
 	case AST_SYMBOL:
 		return newTac(TAC_SYMBOL, node->symbol, 0, 0);
-	case AST_ADD:
-		return createBinaryOperation(TAC_ADD, son);
 	case AST_SUB:
-		return createBinaryOperation(TAC_SUB, son);
+		return generateBinaryOpTac(TAC_SUB, son);
+	case AST_ADD:
+		return generateBinaryOpTac(TAC_ADD, son);
 	case AST_DIV:
-		return createBinaryOperation(TAC_DIV, son);
+		return generateBinaryOpTac(TAC_DIV, son);
 	case AST_MULT:
-		return createBinaryOperation(TAC_MUL, son);
-	case AST_LESS:
-		return createBinaryOperation(TAC_LESS, son);
+		return generateBinaryOpTac(TAC_MUL, son);
 	case AST_GREATHER:
-		return createBinaryOperation(TAC_GREAT, son);
+		return generateBinaryOpTac(TAC_GREAT, son);
+	case AST_LESS:
+		return generateBinaryOpTac(TAC_LESS, son);
 	case AST_GE:
-		return createBinaryOperation(TAC_GE, son);
-	case AST_EQ:
-		return createBinaryOperation(TAC_EQ, son);
+		return generateBinaryOpTac(TAC_GE, son);
 	case AST_LE:
-		return createBinaryOperation(TAC_LE, son);
+		return generateBinaryOpTac(TAC_LE, son);
+	case AST_EQ:
+		return generateBinaryOpTac(TAC_EQ, son);
 	case AST_DIF:
-		return createBinaryOperation(TAC_DIF, son);
+		return generateBinaryOpTac(TAC_DIF, son);
 	case AST_NOT:
-		return createBinaryOperation(TAC_NOT, son);
+		return generateBinaryOpTac(TAC_NOT, son);
 	case AST_OR:
-		return createBinaryOperation(TAC_OR, son);
+		return generateBinaryOpTac(TAC_OR, son);
 	case AST_AND:
-		return createBinaryOperation(TAC_AND, son);
-	case AST_ATTR:
-		return tacJoin(son[0], newTac(TAC_COPY, node->symbol, son[0] ? son[0]->res : 0, 0));
+		return generateBinaryOpTac(TAC_AND, son);
 	case AST_VECATTR:
 		return tacJoin(son[0], tacJoin(son[1], newTac(TAC_VECATTR, node->symbol, son[0] ? son[0]->res : 0, son[1] ? son[1]->res : 0)));
+	case AST_ATTR:
+		return tacJoin(son[0], newTac(TAC_COPY, node->symbol, son[0] ? son[0]->res : 0, 0));
 	case AST_READ:
 		return newTac(TAC_READ, node->symbol, 0, 0);
 	case AST_PRINT:
 		return tacJoin(tacJoin(son[0], newTac(TAC_PRINT, son[0] ? son[0]->res : 0, 0, 0)), son[1]);
 	case AST_RETURN:
-		return tacJoin(son[0], newTac(TAC_RET, son[0] ? son[0]->res : 0, 0, 0));
+		return tacJoin(son[0], newTac(TAC_RETURN, son[0] ? son[0]->res : 0, 0, 0));
 	case AST_IFELSE:
 	case AST_IF:
 		return createIf(son);
@@ -223,32 +222,29 @@ tac *createTacs(AST *node, hash_node *currentLoopLabel)
 		return tacJoin(son[0], newTac(TAC_CALL, makeTemp(), node->symbol, 0));
 	case AST_ARGL:
 	case AST_ARGLREST:
-		return tacJoin(son[1], tacJoin(son[0], newTac(TAC_ARGPUSH, son[0] ? son[0]->res : 0, 0, 0)));
+		return tacJoin(son[1], tacJoin(son[0], newTac(TAC_ARGLREST, son[0] ? son[0]->res : 0, 0, 0)));
 	case AST_VEC_CALL:
-		return tacJoin(son[0], newTac(TAC_VEC, makeTemp(), node->symbol, son[0] ? son[0]->res : 0));
+		return tacJoin(son[0], newTac(TAC_VEC_CALL, makeTemp(), node->symbol, son[0] ? son[0]->res : 0));
 	case AST_DECFUNC:
 		return createFunction(newTac(TAC_SYMBOL, node->symbol, 0, 0), son[1], son[2]);
-	case AST_PARAM:
-		return tacJoin(newTac(TAC_PARAM, node->symbol, 0, 0), son[1]);
-
 	default:
 		return tacJoin(tacJoin(tacJoin(son[0], son[1]), son[2]), son[3]);
 	}
 }
 
-tac *createBinaryOperation(int type, tac *son[])
-{
-	hash_node *op1;
-	hash_node *op2;
-	if (son[0])
-		op1 = son[0]->res;
-	else
-		op1 = 0;
-	if (son[1])
-		op2 = son[1]->res;
-	else
-		op2 = 0;
-	return tacJoin(son[0], tacJoin(son[1], newTac(type, makeTemp(), op1, op2)));
+	tac *generateBinaryOpTac(int type, tac *operands[]) {
+    hash_node *firstOperand = 0;
+    hash_node *secondOperand = 0;
+
+    if (operands[0]) {
+        firstOperand = operands[0]->res;
+    }
+
+    if (operands[1]) {
+        secondOperand = operands[1]->res;
+    }
+
+    return tacJoin(operands[0], tacJoin(operands[1], newTac(type, makeTemp(), firstOperand, secondOperand)));
 }
 
 tac *createIf(tac *son[])
