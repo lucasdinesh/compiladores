@@ -13,15 +13,42 @@ void hashInit(void)
     }
 }
 
-hash_node *hashInsert(int type, char *text)
+int getDatatypeFromHash(int type)
 {
+    if (type)
+    {
+
+        switch (type)
+        {
+        case SYMBOL_LIT_INTEGER:
+            return DATATYPE_INT;
+        case SYMBOL_LIT_FALSE:
+        case SYMBOL_LIT_TRUE:
+            return DATATYPE_BOOL;
+        case SYMBOL_LIT_REAL:
+            return DATATYPE_FLOAT;
+        case SYMBOL_LIT_CHAR:
+            return DATATYPE_CHAR;
+        default:
+            break;
+        }
+    }
+    return 0;
+}
+
+hash_node *hashInsert(int type, char *text)
+{   
+
     hash_node *newnode = hashFind(text);
     if (newnode != NULL)
         return newnode;
 
     int address = hashAddress(text);
+
     newnode = (hash_node *)calloc(1, sizeof(hash_node));
+
     newnode->type = type;
+    newnode->datatype = getDatatypeFromHash(type);
     newnode->text = calloc(strlen(text) + 1, sizeof(char));
     strcpy(newnode->text, text);
 
@@ -85,4 +112,18 @@ int hash_check_undeclared(void)
         }
     }
     return undeclared;
+}
+
+hash_node * makeTemp(){
+	static int serialNumber = 0;
+	static char buffer[128];
+	sprintf(buffer, "mYWeeirT_emp%d", serialNumber++);
+	return hashInsert(SYMBOL_IDENTIFIER, buffer);
+}
+
+hash_node * makeLabel(){
+	static int serialNumber = 0;
+	static char buffer[128];
+	sprintf(buffer, "mYLabe_l%d", serialNumber++);
+	return hashInsert(SYMBOL_IDENTIFIER, buffer);
 }

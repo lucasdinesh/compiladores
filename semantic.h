@@ -7,7 +7,6 @@
 
 extern int semanticErrors;
 
-//DATATYPE CHECK
 int isDatatypeCompatible(int datatype1, int datatype2);
 int isLogicalOperation(int nodetype);
 int isRelationalOperation(int nodetype);
@@ -17,7 +16,7 @@ int isChar(int datatype);
 int isBoolean(int datatype);
 int isInteger(int datatype);
 int validToArithmetic(int dataType);
-int isNumber(AST *node);
+bool isNumericOrArithmetic(AST *node);
 void checkPrint(AST *node);
 void validateFunction(AST *node);
 AST* searchForFunctionDeclaration(char * name, AST *node);
@@ -26,20 +25,14 @@ bool checkNumberOfArguments(AST *node, AST *dec);
 void checkCalledArguments(AST *node, AST *dec);
 void isReturnCompatible(AST *node, int datatype);
 void checkVector(AST *node, int vecDataType, int vecLenght);
-int getDatatypeFromHash(hash_node *hashNode);
-
 
 void checkAndSetDeclarations(AST *node);
 void checkUndeclared();
 int getDatatype();
 void checkOperands(AST *node);
-void setNodeTypes(AST *node);
+void assignAndValidateNodeTypes(AST *node);
 int checkSemantic(AST *root);
 void checkUsage(AST *node);
 void checkReturns(AST * node);
-
-
-
-
 
 #endif
