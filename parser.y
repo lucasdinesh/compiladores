@@ -78,7 +78,7 @@
 %%
 
 programa: decl                   {root=$$;
-                        SemanticErrors = checkSemantic(root);
+                                SemanticErrors = checkSemantic(root);
                         }
 ;
 

@@ -51,6 +51,8 @@ int main(int argc, char *argv[]){
 
 	printAllTacs(getTACS());
 
+	generateASM(getTACS());
+
     exit(0);
 }
 

@@ -1,0 +1,38 @@
+// UFRGS - Marcelo Johann - Compiladores - 2024-1
+
+int a: 0;
+char c:'c';
+int vector [ 10 ]: 0 0 0 0 0 0 0 0 0 0;
+
+int incn ( int x, int n , int nx , int ny , int nz )
+   {
+   return (x+n);
+   }
+
+int main ()
+   {
+   print "Digite ";
+   print int 1;
+   print " numero";
+
+   if ( a==1 )
+     a = 7;
+   else
+     print "nao imprime";
+
+   a = 5 + 2 + 3;
+
+   while ( a < 10 )
+     {
+     a = incn ( a, 1, 2, 3, 4);
+     print ".";
+     }
+
+   vector[7] = 999;
+   a = vector[55];
+   print int (2+vector[55]);
+   return 100;
+   }
+
+// END
+

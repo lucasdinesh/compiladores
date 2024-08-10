@@ -54,4 +54,8 @@ tac* generateBinaryOpTac(int type, tac* son[]);
 tac* createWhileLoop(tac* son[], hash_node *label);
 tac* createFunction(tac* symbol, tac* params, tac* code);
 
+// ASM GENERATION
+
+void generateASM(tac* first);
+
 #endif

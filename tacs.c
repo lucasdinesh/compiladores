@@ -30,14 +30,15 @@ tac *tacJoin(tac *l1, tac *l2)
 	return l2;
 }
 
+tac *reverseTacList(tac *head)
+{
+	tac *current;
 
-tac *reverseTacList(tac *head) {
-    tac *current;
-    
-    for (current = head; current->prev; current = current->prev) {
-        current->prev->next = current;
-    }
-    return current;
+	for (current = head; current->prev; current = current->prev)
+	{
+		current->prev->next = current;
+	}
+	return current;
 }
 
 void printAllTacs(tac *l)
@@ -232,19 +233,22 @@ tac *createTacs(AST *node, hash_node *currentLoopLabel)
 	}
 }
 
-	tac *generateBinaryOpTac(int type, tac *operands[]) {
-    hash_node *firstOperand = 0;
-    hash_node *secondOperand = 0;
+tac *generateBinaryOpTac(int type, tac *operands[])
+{
+	hash_node *firstOperand = 0;
+	hash_node *secondOperand = 0;
 
-    if (operands[0]) {
-        firstOperand = operands[0]->res;
-    }
+	if (operands[0])
+	{
+		firstOperand = operands[0]->res;
+	}
 
-    if (operands[1]) {
-        secondOperand = operands[1]->res;
-    }
+	if (operands[1])
+	{
+		secondOperand = operands[1]->res;
+	}
 
-    return tacJoin(operands[0], tacJoin(operands[1], newTac(type, makeTemp(), firstOperand, secondOperand)));
+	return tacJoin(operands[0], tacJoin(operands[1], newTac(type, makeTemp(), firstOperand, secondOperand)));
 }
 
 tac *createIf(tac *son[])
@@ -282,4 +286,59 @@ tac *createWhileLoop(tac *son[], hash_node *whileLabel)
 tac *createFunction(tac *symbol, tac *params, tac *code)
 {
 	return tacJoin(tacJoin(tacJoin(newTac(TAC_BEGINFUN, symbol->res, 0, 0), params), code), newTac(TAC_ENDFUN, symbol->res, 0, 0));
+}
+
+void generateASM(tac *first)
+{
+	tac *tac;
+	FILE *fout;
+	fout = fopen("out.s", "w");
+
+	// INIT
+	fprintf(fout,
+			"## FIXED INIT\n"
+			"printNumber:.string	\"%%d\\n\"\n"
+			"printSTR: .string \"%%s\\n\"\n"
+			"\n");
+
+	// EACH TAC
+	for (tac = first; tac; tac = tac->next)
+	{
+
+		switch (tac->type)
+		{
+		case TAC_BEGINFUN:
+			fprintf(fout,
+					"## TAC_BEGINFUN""\n"
+					"\t.globl %s\n"
+					"%s:\n"
+					"\tpushq %%rbp\n"
+					"\n", tac->res->text, tac->res->text);
+					
+			break;
+		case TAC_ENDFUN:
+			fprintf(fout,
+					"## TAC_ENDFUN" "\n"
+					"\tpopq %%rbp" "\n"
+					"\tret" "\n"
+					"\n");
+			break;
+		case TAC_PRINT:
+			fprintf(fout,
+					"## TAC_PRINT" "\n"
+					"\tmovl	%s(%%rip), %%eax\n"
+					"\tmovl	%%eax, %%esi\n"
+					"\tleaq printSTR(%%rip), %%rax" "\n"
+					"\tmovq %%rax, %%rdi" "\n"
+					"\tcall printf@PLT" "\n"
+					"\n", tac->res->text);
+
+			break;
+		default:
+			break;
+		}
+	}
+
+	// HASH TABLE
+	fclose(fout);
 }
