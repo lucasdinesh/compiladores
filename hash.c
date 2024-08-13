@@ -37,7 +37,7 @@ int getDatatypeFromHash(int type)
 }
 
 hash_node *hashInsert(int type, char *text)
-{   
+{
 
     hash_node *newnode = hashFind(text);
     if (newnode != NULL)
@@ -51,7 +51,7 @@ hash_node *hashInsert(int type, char *text)
     newnode->datatype = getDatatypeFromHash(type);
     newnode->text = calloc(strlen(text) + 1, sizeof(char));
     strcpy(newnode->text, text);
-
+    makeAssemblyTempName(newnode);
     newnode->next = Table[address];
     Table[address] = newnode;
 
@@ -89,41 +89,105 @@ void hashPrint(void)
         {
             for (node = Table[i]; node != NULL; node = node->next)
             {
-                printf("Table[%d] - type: %d, text: %s, datatype: %d, type:%d\n", i, node->type, node->text, node->datatype, node->type);
+                printf("Table[%d] - type: %d, text: %s, datatype: %d\n", i, node->type, node->text, node->datatype);
             }
         }
     }
 }
 
+void printASM(FILE *fout)
+{
+    int tempIterator = 0;
+    hash_node *node;
+
+    fprintf(fout, "##DATA SECTION\n");
+
+    for (int i = 0; i < HASH_SIZE; i++)
+    {
+        if (Table[i] != NULL)
+        {
+            for (node = Table[i]; node != NULL; node = node->next)
+            {
+                if (node->initVariableValue != NULL)
+                    printf("Table[%d] - type: %d, text: %s, datatype: %d, node->initVariableValue: %s\n", i, node->type, node->text, node->datatype, node->initVariableValue);
+                else
+                    printf("Table[%d] - type: %d, text: %s, datatype: %d\n", i, node->type, node->text, node->datatype);
+
+                if (node->type == SYMBOL_VARIABLE)
+                {
+                    switch (node->datatype)
+                    {
+                    case DATATYPE_INT:
+                        fprintf(fout, "%s:\t.long\t%s\n", node->text, node->initVariableValue);
+                        break;
+                    case DATATYPE_FLOAT:
+                        fprintf(fout, "%s:\t.float\t%s\n", node->text, node->initVariableValue);
+                        break;
+                    case DATATYPE_CHAR:
+                        fprintf(fout, "%s:\t.long\t%d\n", node->text, node->initVariableValue[0]);
+                        break;
+                    case DATATYPE_BOOL:
+                        fprintf(fout, "%s:\t.long\t%d\n", node->text, node->initVariableValue[0]);
+                        break;
+                    default:
+                        fprintf(stderr, "Unknown datatype: %d\n", node->datatype);
+                        break;
+                    }
+                }
+
+                if (node->type == SYMBOL_LIT_STRING)
+                {
+                    fprintf(fout,
+                            "%s:\t.string\t%s\n", node->tempAssemblyName, node->text);
+                }
+            }
+        }
+    }
+    fprintf(fout,
+            "\t.section\t.rodata\n");
+}
+
 int hash_check_undeclared(void)
 {
-    int undeclared =0;
+    int undeclared = 0;
     hash_node *node;
     for (int i = 0; i < HASH_SIZE; i++)
     {
         if (Table[i] != NULL)
         {
             for (node = Table[i]; node != NULL; node = node->next)
-            if(node->type == SYMBOL_IDENTIFIER)
-            {
-                fprintf(stderr, "SEMANTIC ERROR: identifier %s undeclared\n", node->text);
-                ++ undeclared;
-            }
+                if (node->type == SYMBOL_IDENTIFIER)
+                {
+                    fprintf(stderr, "SEMANTIC ERROR: identifier %s undeclared\n", node->text);
+                    ++undeclared;
+                }
         }
     }
     return undeclared;
 }
 
-hash_node * makeTemp(){
-	static int serialNumber = 0;
-	static char buffer[128];
-	sprintf(buffer, "mYWeeirT_emp%d", serialNumber++);
-	return hashInsert(SYMBOL_IDENTIFIER, buffer);
+hash_node *makeTemp()
+{
+    static int serialNumber = 0;
+    static char buffer[128];
+    sprintf(buffer, "mYWeeirT_emp%d", serialNumber++);
+    return hashInsert(SYMBOL_IDENTIFIER, buffer);
 }
 
-hash_node * makeLabel(){
-	static int serialNumber = 0;
-	static char buffer[128];
-	sprintf(buffer, "mYLabe_l%d", serialNumber++);
-	return hashInsert(SYMBOL_IDENTIFIER, buffer);
+hash_node *makeLabel()
+{
+    static int serialNumber = 0;
+    static char buffer[128];
+    sprintf(buffer, "mYLabe_l%d", serialNumber++);
+    return hashInsert(SYMBOL_IDENTIFIER, buffer);
+}
+
+void makeAssemblyTempName(hash_node *node)
+{
+
+    static int tempIterator = 0;
+    static char buffer[128];
+    sprintf(buffer, "tempStringName_l%d", tempIterator++);
+    node->tempAssemblyName = calloc(strlen(buffer) + 1, sizeof(char));
+    strcpy(node->tempAssemblyName, buffer);
 }

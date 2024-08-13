@@ -1,0 +1,8 @@
+int a : 6 ;
+float f : 2.5 ;
+char c : 'c' ;
+bool d : true ;
+int main(){
+print  "Digite" ;
+print int  a ;
+}

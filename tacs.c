@@ -299,9 +299,10 @@ void generateASM(tac *first)
 			"## FIXED INIT\n"
 			"printNumber:.string	\"%%d\\n\"\n"
 			"printSTR: .string \"%%s\\n\"\n"
+			"printReal: .string \"%%f\\n\"\n"
+			"printChar: .string \"%%c\\n\"\n"
 			"\n");
 
-	// EACH TAC
 	for (tac = first; tac; tac = tac->next)
 	{
 
@@ -309,36 +310,83 @@ void generateASM(tac *first)
 		{
 		case TAC_BEGINFUN:
 			fprintf(fout,
-					"## TAC_BEGINFUN""\n"
+					"## TAC_BEGINFUN"
+					"\n"
 					"\t.globl %s\n"
 					"%s:\n"
 					"\tpushq %%rbp\n"
-					"\n", tac->res->text, tac->res->text);
-					
+					"\n",
+					tac->res->text, tac->res->text);
+
 			break;
 		case TAC_ENDFUN:
 			fprintf(fout,
-					"## TAC_ENDFUN" "\n"
-					"\tpopq %%rbp" "\n"
-					"\tret" "\n"
+					"## TAC_ENDFUN"
+					"\n"
+					"\tpopq %%rbp"
+					"\n"
+					"\tret"
+					"\n"
 					"\n");
 			break;
 		case TAC_PRINT:
-			fprintf(fout,
-					"## TAC_PRINT" "\n"
-					"\tmovl	%s(%%rip), %%eax\n"
-					"\tmovl	%%eax, %%esi\n"
-					"\tleaq printSTR(%%rip), %%rax" "\n"
-					"\tmovq %%rax, %%rdi" "\n"
-					"\tcall printf@PLT" "\n"
-					"\n", tac->res->text);
 
-			break;
-		default:
+			if (tac->res->type == SYMBOL_LIT_STRING)
+			{
+				fprintf(fout,
+						"## TAC_PRINT_STRING\n"
+						"\tleaq %s(%%rip), %%rax\n"
+						"\tmovq	%%rax, %%rsi\n"
+						"\tleaq printSTR(%%rip), %%rax\n"
+						"\tmovq %%rax, %%rdi\n"
+						"\tcall printf@PLT\n\n",
+						tac->res->tempAssemblyName);
+			}
+			if (tac->res->type == SYMBOL_VARIABLE)
+			{
+				switch (tac->res->datatype)
+				{
+				case DATATYPE_FLOAT:
+					fprintf(fout,
+						   "## TAC_PRINT_FLOAT\n"
+						   "\tmovss\t%s(%%rip), %%xmm0\n"
+						   "\tpxor\t%%xmm1, %%xmm1\n"
+						   "\tcvtss2sd\t%%xmm0, %%xmm1\n"
+						   "\tmovq\t %%xmm1, %%rax\n"
+						   "\tmovq\t%%rax, %%xmm0\n"
+						   "\tleaq\tprintReal(%%rip), %%rax\n"
+						   "\tmovq\t%%rax, %%rdi\n"
+						   "\tmovl\t$1, %%eax\n"
+						   "\tcall\tprintf@PLT\n"
+						   "\tmovl\t$0, %%eax\n",
+						   tac->res->text);
+					break;
+				case DATATYPE_CHAR:
+					fprintf(fout, "## TAC_PRINT_CHAR\n"
+								 "movzbl\t%s(%%rip), %%eax\n"
+								 "movsbl\t%%al, %%eax\n"
+								 "movl\t%%eax, %%esi\n"
+								 "leaq\tprintChar(%%rip), %%rax\n"
+								 "movq\t%%rax, %%rdi\n"
+								 "\tcall\tprintf@PLT\n",
+						   tac->res->text);
+				case DATATYPE_INT:
+					fprintf(fout,  "## TAC_PRINT_INT\n"
+								"\tmovl\t%s(%%rip), %%eax\n"
+								 "\tmovl\t%%eax, %%esi\n"
+								 "\tleaq\tprintNumber(%%rip), %%rax\n"
+								 "\tmovq\t%%rax, %%rdi\n"
+								 "\tcall\tprintf@PLT\n",
+						   tac->res->text);
+				}
+			}
 			break;
 		}
 	}
 
 	// HASH TABLE
+
+	printASM(fout);
+
 	fclose(fout);
 }

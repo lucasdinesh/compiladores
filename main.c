@@ -43,6 +43,8 @@ int main(int argc, char *argv[]){
 
 	uncompileAST(getAST(), output);
 
+	astPrint(getAST(), 0);
+
 	fprintf(stderr, "Uncompiled Successfully!\n");
 
 	fclose(output);

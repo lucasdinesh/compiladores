@@ -1,4 +1,5 @@
 #ifndef HASH
+#include <stdio.h>
 #define HASH
 
 #define HASH_SIZE 997
@@ -26,6 +27,8 @@ typedef struct hash_node{
     int datatype;
     char* text;
     struct hash_node* next;
+    char* tempAssemblyName;
+    char* initVariableValue;
 } hash_node;
 
 void hashInit(void);
@@ -37,5 +40,8 @@ int hash_check_undeclared(void);
 hash_node* makeTemp();
 hash_node* makeLabel();
 int getDatatypeFromHash(int type);
+
+void printASM(FILE *fout);
+
 
 #endif
