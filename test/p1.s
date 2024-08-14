@@ -18,6 +18,27 @@ main:
 	movq	%rax, %rdi
 	call	printf@PLT
 
+#TAC_ADD
+	
+	movl	a(%rip), %edx
+	movl	b(%rip), %eax
+	addl	%edx, %eax
+
+#TAC_SUB
+	movl	a(%rip), %eax
+	movl	b(%rip), %edx
+	subl	%edx, %eax
+
+#TAC_DIV
+	movl	a(%rip), %eax
+	movl	b(%rip), %ecx
+	cltd
+	idivl	%ecx
+
+#TAC_MUL
+	movl	a(%rip), %edx
+	movl	b(%rip), %eax
+	imull	%edx, %eax
 ## TAC_END
 	popq	%rbp
 	ret

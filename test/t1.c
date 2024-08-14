@@ -1,17 +1,12 @@
 #include <stdio.h>
-int a=8;
-int b=7;
-float d = 7.7;
-float e = 7.777;
-char c[] = "string";
-char f = 'c';
 
+int b = 8;
+int d = 6;
 int main(){
-
-// printf("Digite");
-// printf("TEST2");
-// printf("%s", c);
-// printf("%d", b);
-// printf("%f", d);
-printf("%d\n", b);
+    if(b>d){
+        printf("B é Maior que D");
+    }
+    else{
+        printf("D é Maior que B");
+    }
 }

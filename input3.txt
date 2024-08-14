@@ -1,0 +1,13 @@
+// UFRGS - Marcelo Johann - Compiladores - 2024-1
+int vector [ 10 ]: 1 2 3 4 5 6 7 8 9 10;
+char a :'c';
+bool b: true;
+
+int main ()
+   {
+      print "Digite algo";
+      print bool b;
+   }
+
+// END
+

@@ -1,60 +1,54 @@
 	.file	"t1.c"
 	.text
-	.globl	a
-	.data
-	.align 4
-	.type	a, @object
-	.size	a, 4
-a:
-	.long	8
 	.globl	b
+	.data
 	.align 4
 	.type	b, @object
 	.size	b, 4
 b:
-	.long	7
+	.long	8
 	.globl	d
 	.align 4
 	.type	d, @object
 	.size	d, 4
 d:
-	.long	1089889894
-	.globl	e
-	.align 4
-	.type	e, @object
-	.size	e, 4
-e:
-	.long	1090051375
-	.globl	c
-	.type	c, @object
-	.size	c, 7
-c:
-	.string	"string"
-	.globl	f
-	.type	f, @object
-	.size	f, 1
-f:
-	.byte	99
+	.long	6
 	.section	.rodata
 .LC0:
-	.string	"%d\n"
+	.string	"B \303\251 Maior que D"
+.LC1:
+	.string	"D \303\251 Maior que B"
 	.text
 	.globl	main
 	.type	main, @function
 main:
 .LFB0:
-
+	.cfi_startproc
+	endbr64
 	pushq	%rbp
-
-	movl	b(%rip), %eax
-	movl	%eax, %esi
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	b(%rip), %edx
+	movl	d(%rip), %eax
+	cmpl	%eax, %edx
+	jle	.L2
 	leaq	.LC0(%rip), %rax
 	movq	%rax, %rdi
+	movl	$0, %eax
 	call	printf@PLT
-	
+	jmp	.L3
+.L2:
+	leaq	.LC1(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+.L3:
+	movl	$0, %eax
 	popq	%rbp
 	ret
-
+	.cfi_endproc
 .LFE0:
 	.size	main, .-main
 	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"

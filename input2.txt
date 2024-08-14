@@ -1,13 +1,17 @@
 // UFRGS - Marcelo Johann - Compiladores - 2024-1
 int a:6;
+int b:6;
 float f:2.5;	
 char c:'c';
 bool d:true;
 
 int main ()
    {
-   print "Digite";
+
+   a = a+b;
    print int a;
+
+   a = a-b;
    }
 
 // END

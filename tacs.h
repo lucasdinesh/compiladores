@@ -56,6 +56,6 @@ tac* createFunction(tac* symbol, tac* params, tac* code);
 
 // ASM GENERATION
 
-void generateASM(tac* first);
+void generateASM(tac* first, AST *node);
 
 #endif

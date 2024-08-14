@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
 
 	uncompileAST(getAST(), output);
 
-	astPrint(getAST(), 0);
+	// astPrint(getAST(), 0);
 
 	fprintf(stderr, "Uncompiled Successfully!\n");
 
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
 
 	printAllTacs(getTACS());
 
-	generateASM(getTACS());
+	generateASM(getTACS(), getAST());
 
     exit(0);
 }

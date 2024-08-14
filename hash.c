@@ -95,12 +95,14 @@ void hashPrint(void)
     }
 }
 
+
 void printASM(FILE *fout)
 {
     int tempIterator = 0;
     hash_node *node;
 
-    fprintf(fout, "##DATA SECTION\n");
+    fprintf(fout, "##DATA SECTION\n"
+                  "\t.data\n");
 
     for (int i = 0; i < HASH_SIZE; i++)
     {
@@ -108,26 +110,24 @@ void printASM(FILE *fout)
         {
             for (node = Table[i]; node != NULL; node = node->next)
             {
-                if (node->initVariableValue != NULL)
-                    printf("Table[%d] - type: %d, text: %s, datatype: %d, node->initVariableValue: %s\n", i, node->type, node->text, node->datatype, node->initVariableValue);
-                else
-                    printf("Table[%d] - type: %d, text: %s, datatype: %d\n", i, node->type, node->text, node->datatype);
+                // if (node->initVariableValue != NULL)
+                //     printf("Table[%d] - type: %d, text: %s, datatype: %d, node->initVariableValue: %s\n", i, node->type, node->text, node->datatype, node->initVariableValue);
+                // else
+                //     printf("Table[%d] - type: %d, text: %s, datatype: %d\n", i, node->type, node->text, node->datatype);
 
                 if (node->type == SYMBOL_VARIABLE)
                 {
                     switch (node->datatype)
                     {
                     case DATATYPE_INT:
+                    case DATATYPE_BOOL:
                         fprintf(fout, "%s:\t.long\t%s\n", node->text, node->initVariableValue);
                         break;
                     case DATATYPE_FLOAT:
                         fprintf(fout, "%s:\t.float\t%s\n", node->text, node->initVariableValue);
                         break;
                     case DATATYPE_CHAR:
-                        fprintf(fout, "%s:\t.long\t%d\n", node->text, node->initVariableValue[0]);
-                        break;
-                    case DATATYPE_BOOL:
-                        fprintf(fout, "%s:\t.long\t%d\n", node->text, node->initVariableValue[0]);
+                        fprintf(fout, "%s:\t.byte\t%d\n", node->text, node->initVariableValue[0]);
                         break;
                     default:
                         fprintf(stderr, "Unknown datatype: %d\n", node->datatype);
@@ -138,13 +138,11 @@ void printASM(FILE *fout)
                 if (node->type == SYMBOL_LIT_STRING)
                 {
                     fprintf(fout,
-                            "%s:\t.string\t%s\n", node->tempAssemblyName, node->text);
+                            "\t.section\t .rodata\n%s:\t.string\t%s\n", node->tempAssemblyName, node->text);
                 }
             }
         }
     }
-    fprintf(fout,
-            "\t.section\t.rodata\n");
 }
 
 int hash_check_undeclared(void)

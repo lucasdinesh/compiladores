@@ -41,6 +41,7 @@ hash_node* makeTemp();
 hash_node* makeLabel();
 int getDatatypeFromHash(int type);
 
+void makeAssemblyTempName(hash_node *node);
 void printASM(FILE *fout);
 
 
