@@ -135,7 +135,7 @@ void printASM(FILE *fout)
                 if (node->type == SYMBOL_LIT_STRING)
                 {
                     fprintf(fout,
-                            "\t.section\t .rodata\n_%s:\t.string\t%s\n", node->tempAssemblyName, node->text);
+                            "_%s:\t.string\t%s\n", node->tempAssemblyName, node->text);
                 }
             }
         }

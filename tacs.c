@@ -531,18 +531,15 @@ void addTemporaries(FILE* fout){
              break;
 			case TAC_VEC_CALL: 
                 fprintf(fout,"## TAC_VEC_CALL\n"
-                        "\txorl	%%eax, %%eax\n"
-                        "\tmovq	_%s@GOTPCREL(%%rip), %%rcx\n"
                         "\tmovl	_%s+%d(%%rip), %%edx\n"
-                        "\tmovl	%%edx, (%%rcx)\n\n",tac->res->text, tac->op1->text, 4*atoi(tac->op2->text));
+                        "\tmovl	%%edx, _%s(%%rip)\n\n",tac->op1->text, 4*atoi(tac->op2->text), tac->res->text);
                 break;
 			case TAC_VECATTR: 
                 fprintf(fout, 
                     "## TAC_VECATTR\n"
                         "\txorl	%%eax, %%eax\n"
                         "\tmovl	_%s(%%rip), %%esi\n"
-                        "\tmovl	 %%esi, _%s+%d(%%rip)\n"
-                        "\tmovl	%%esi, (%%rcx,%%rdx,4)\n\n", tac->op2->text, tac->res->text, 4*atoi(tac->op1->text));
+                        "\tmovl	 %%esi, _%s+%d(%%rip)\n\n", tac->op2->text, tac->res->text, 4*atoi(tac->op1->text));
 			}
 		}
 

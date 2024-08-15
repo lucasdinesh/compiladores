@@ -7,6 +7,7 @@ int main()
     if(a==8){
         printf("OK");
     }
-
-    b[1] = b[1] + 5;
+ 
+    a = b[1] + 5;
+  
 }

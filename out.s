@@ -9,66 +9,28 @@ printChar: .string "%c\n"
 main:
 	pushq %rbp
 
-## TAC_PRINT_STRING
-	leaq _tempStringName_l17(%rip), %rax
-	movq	%rax, %rsi
-	leaq printSTR(%rip), %rax
-	movq %rax, %rdi
-	call printf@PLT
-
-## TAC_PRINT_BOOL 1 is TRUE 0 is False
-	movl	_b(%rip), %eax
-	movl	%eax, %esi
-	leaq	printNumber(%rip), %rax
-	movq	%rax, %rdi
-	call	printf@PLT
+## TAC_VEC_CALL
+	movl	_vector+28(%rip), %edx
+	movl	%edx, _mYWeeirT_emp0(%rip)
 
 ## TAC_PRINT_INT
-	movl	_75(%rip), %eax
+	movl	_mYWeeirT_emp0(%rip), %eax
 	movl	%eax, %esi
 	leaq	printNumber(%rip), %rax
 	movq	%rax, %rdi
 	call	printf@PLT
 
-## TAC_PRINT_CHAR
-movzbl	_a(%rip), %eax
-movsbl	%al, %eax
-movl	%eax, %esi
-leaq	printChar(%rip), %rax
-movq	%rax, %rdi
-	call	printf@PLT
-
-## TAC_ADD
-	movl	_c(%rip), %edx
-	movl	_6(%rip), %eax
-	addl	%edx, %eax
-## TAC_COPY
-	movl	%eax, _c(%rip)
-
-## TAC_PRINT_INT
-	movl	_c(%rip), %eax
-	movl	%eax, %esi
-	leaq	printNumber(%rip), %rax
-	movq	%rax, %rdi
-	call	printf@PLT
-
-
-
-
-## TAC_ADD
-	movl	_mYWeeirT_emp1(%rip), %edx
-	movl	_5(%rip), %eax
-	addl	%edx, %eax
-
+## TAC_VECATTR
+	xorl	%eax, %eax
+	movl	_999(%rip), %esi
+	movl	 %esi, _vector+28(%rip)
 
 ## TAC_VEC_CALL
-	xorl	%eax, %eax
-	movq	_mYWeeirT_emp3@GOTPCREL(%rip), %rcx
-	movl	_vector+4(%rip), %edx
-	movl	%edx, (%rcx)
+	movl	_vector+28(%rip), %edx
+	movl	%edx, _mYWeeirT_emp1(%rip)
 
 ## TAC_PRINT_INT
-	movl	_mYWeeirT_emp3(%rip), %eax
+	movl	_mYWeeirT_emp1(%rip), %eax
 	movl	%eax, %esi
 	leaq	printNumber(%rip), %rax
 	movq	%rax, %rdi
@@ -83,8 +45,6 @@ movq	%rax, %rdi
 _a:	.byte	99
 _b:	.long	1
 _c:	.long	4
-	.section	 .rodata
-_tempStringName_l17:	.string	"Digite algo"
 _vector:
 	.long	1
 	.long	2
@@ -120,13 +80,7 @@ _10:
 	.long   10
 _'c':
 	.long   99
-_75:
-	.long   75
 _mYWeeirT_emp0:
 	.long  0
 _mYWeeirT_emp1:
-	.long  0
-_mYWeeirT_emp2:
-	.long  0
-_mYWeeirT_emp3:
 	.long  0

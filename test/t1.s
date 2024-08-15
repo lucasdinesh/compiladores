@@ -40,7 +40,7 @@ main:
 .L2:
 	movl	4+b(%rip), %eax
 	addl	$5, %eax
-	movl	%eax, 4+b(%rip)
+	movl	%eax, a(%rip)
 	movl	$0, %eax
 	popq	%rbp
 	.cfi_def_cfa 7, 8
