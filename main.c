@@ -43,17 +43,19 @@ int main(int argc, char *argv[]){
 
 	uncompileAST(getAST(), output);
 
-	// astPrint(getAST(), 0);
+	astPrint(getAST(), 0);
 
 	fprintf(stderr, "Uncompiled Successfully!\n");
 
 	fclose(output);
 
+	hashPrint();
+
 	checkSemanticErrors();
+	tac *tac_three =getTACS(); 
+	printAllTacs(tac_three);
 
-	printAllTacs(getTACS());
-
-	generateASM(getTACS(), getAST());
+	generateASM(tac_three, getAST());
 
     exit(0);
 }

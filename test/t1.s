@@ -1,23 +1,23 @@
 	.file	"t1.c"
 	.text
-	.globl	b
+	.globl	a
 	.data
 	.align 4
-	.type	b, @object
-	.size	b, 4
-b:
+	.type	a, @object
+	.size	a, 4
+a:
 	.long	8
-	.globl	d
-	.align 4
-	.type	d, @object
-	.size	d, 4
-d:
-	.long	6
+	.globl	b
+	.align 8
+	.type	b, @object
+	.size	b, 12
+b:
+	.long	1
+	.long	2
+	.long	3
 	.section	.rodata
 .LC0:
-	.string	"B \303\251 Maior que D"
-.LC1:
-	.string	"D \303\251 Maior que B"
+	.string	"OK"
 	.text
 	.globl	main
 	.type	main, @function
@@ -30,23 +30,20 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	movl	b(%rip), %edx
-	movl	d(%rip), %eax
-	cmpl	%eax, %edx
-	jle	.L2
+	movl	a(%rip), %eax
+	cmpl	$8, %eax
+	jne	.L2
 	leaq	.LC0(%rip), %rax
 	movq	%rax, %rdi
 	movl	$0, %eax
 	call	printf@PLT
-	jmp	.L3
 .L2:
-	leaq	.LC1(%rip), %rax
-	movq	%rax, %rdi
-	movl	$0, %eax
-	call	printf@PLT
-.L3:
+	movl	4+b(%rip), %eax
+	addl	$5, %eax
+	movl	%eax, 4+b(%rip)
 	movl	$0, %eax
 	popq	%rbp
+	.cfi_def_cfa 7, 8
 	ret
 	.cfi_endproc
 .LFE0:

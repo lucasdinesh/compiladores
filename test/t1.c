@@ -1,12 +1,12 @@
 #include <stdio.h>
 
-int b = 8;
-int d = 6;
-int main(){
-    if(b>d){
-        printf("B é Maior que D");
+int a = 8;
+int b[] = {1,2,3};
+int main()
+{
+    if(a==8){
+        printf("OK");
     }
-    else{
-        printf("D é Maior que B");
-    }
+
+    b[1] = b[1] + 5;
 }

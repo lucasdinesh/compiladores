@@ -121,16 +121,13 @@ void printASM(FILE *fout)
                     {
                     case DATATYPE_INT:
                     case DATATYPE_BOOL:
-                        fprintf(fout, "%s:\t.long\t%s\n", node->text, node->initVariableValue);
+                        fprintf(fout, "_%s:\t.long\t%s\n", node->text, node->initVariableValue);
                         break;
                     case DATATYPE_FLOAT:
-                        fprintf(fout, "%s:\t.float\t%s\n", node->text, node->initVariableValue);
+                        fprintf(fout, "_%s:\t.float\t%s\n", node->text, node->initVariableValue);
                         break;
                     case DATATYPE_CHAR:
-                        fprintf(fout, "%s:\t.byte\t%d\n", node->text, node->initVariableValue[0]);
-                        break;
-                    default:
-                        fprintf(stderr, "Unknown datatype: %d\n", node->datatype);
+                        fprintf(fout, "_%s:\t.byte\t%d\n", node->text, node->initVariableValue[0]);
                         break;
                     }
                 }
@@ -138,7 +135,7 @@ void printASM(FILE *fout)
                 if (node->type == SYMBOL_LIT_STRING)
                 {
                     fprintf(fout,
-                            "\t.section\t .rodata\n%s:\t.string\t%s\n", node->tempAssemblyName, node->text);
+                            "\t.section\t .rodata\n_%s:\t.string\t%s\n", node->tempAssemblyName, node->text);
                 }
             }
         }
@@ -163,6 +160,11 @@ int hash_check_undeclared(void)
     }
     return undeclared;
 }
+
+hash_node** getHash(){
+    return Table;
+}
+
 
 hash_node *makeTemp()
 {

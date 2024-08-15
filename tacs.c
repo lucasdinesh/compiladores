@@ -297,7 +297,7 @@ void addData(FILE *fout, AST *node)
 	if (node->type == AST_DECVET)
 	{
 		char *variable = calloc(strlen(node->son[1]->symbol->text) + 1, sizeof(char));
-		fprintf(fout, "%s:\n", node->symbol->text);
+		fprintf(fout, "_%s:\n", node->symbol->text);
 
 		for (AST *aux = node->son[2]; aux; aux = aux->son[1])
 		{
@@ -314,20 +314,55 @@ void addData(FILE *fout, AST *node)
 		}
 	}
 
-	// else if (node->type == AST_SYMBOL)
-	// {
-	// 	if (node->symbol->type == SYMBOL_LIT_STRING)
-	// 	{
-	// 		fprintf(fout,
-	// 				"\t.section\t .rodata\n%s:\t.string\t%s\n", node->symbol->tempAssemblyName, node->symbol->text);
-	// 	}
-
-	// }
 		for (int i = 0; i < MAX_SONS; i++)
 		{
 			addData(fout, node->son[i]);
 		}
 	}
+
+void addImmediates(FILE* fout){
+	hash_node** hash = getHash();
+	for(int i = 0; i < HASH_SIZE; i++) {	
+		for(hash_node *aux = hash[i]; aux; aux = aux->next){
+			if((aux->type == SYMBOL_LIT_INTEGER || aux->type == SYMBOL_LIT_REAL) || aux->type == SYMBOL_LIT_CHAR) { 
+                fprintf(fout, "_%s:\n", aux->text);
+
+                if(aux->type == SYMBOL_LIT_REAL) {
+                    // char *conversion = calloc(strlen(aux->text)+1, sizeof(char));
+                    fprintf(fout, "\t.float  %s\n", aux->text);
+                    // free(conversion);
+                }
+                else if(aux->type == SYMBOL_LIT_INTEGER){
+                    // char *conversion = calloc(strlen(aux->text)+1, sizeof(char));
+           
+                    fprintf(fout, "\t.long   %s\n", aux->text);
+
+                }
+                else if(aux->type == SYMBOL_LIT_CHAR){
+                    fprintf(fout, "\t.long   %d\n", aux->text[1]);  // 'x' will print ascii of x only
+                }
+			}
+		}
+	}	
+}
+
+void addTemporaries(FILE* fout){
+    hash_node** hash = getHash();
+
+    for(int i = 0; i < HASH_SIZE; i++) {	
+		for(hash_node *aux = hash[i]; aux; aux = aux->next){
+			if(strncmp(aux->text, "mYWeeirT", 8) == 0) { 
+				fprintf(fout, "_%s:\n", aux->text);
+                if(aux->datatype == DATATYPE_FLOAT){
+                    fprintf(fout, "\t.float  0.0\n");
+                }
+                else{
+                    fprintf(fout, "\t.long  0\n");
+                }
+			}
+		}
+	}
+}
 
 	void generateASM(tac * first, AST * node)
 	{
@@ -376,21 +411,32 @@ void addData(FILE *fout, AST *node)
 				{
 					fprintf(fout,
 							"## TAC_PRINT_STRING\n"
-							"\tleaq %s(%%rip), %%rax\n"
+							"\tleaq _%s(%%rip), %%rax\n"
 							"\tmovq	%%rax, %%rsi\n"
 							"\tleaq printSTR(%%rip), %%rax\n"
 							"\tmovq %%rax, %%rdi\n"
 							"\tcall printf@PLT\n\n",
 							tac->res->tempAssemblyName);
 				}
-				if (tac->res->type == SYMBOL_VARIABLE)
+
+				if(tac->res->type == SYMBOL_IDENTIFIER){
+						fprintf(fout, "## TAC_PRINT_INT\n"
+									  "\tmovl\t_%s(%%rip), %%eax\n"
+									  "\tmovl\t%%eax, %%esi\n"
+									  "\tleaq\tprintNumber(%%rip), %%rax\n"
+									  "\tmovq\t%%rax, %%rdi\n"
+									  "\tcall\tprintf@PLT\n\n",
+								tac->res->text);
+				}
+
+				else
 				{
 					switch (tac->res->datatype)
 					{
 					case DATATYPE_FLOAT:
 						fprintf(fout,
 								"## TAC_PRINT_FLOAT\n"
-								"\tmovss\t%s(%%rip), %%xmm0\n"
+								"\tmovss\t_%s(%%rip), %%xmm0\n"
 								"\tpxor\t%%xmm1, %%xmm1\n"
 								"\tcvtss2sd\t%%xmm0, %%xmm1\n"
 								"\tmovq\t %%xmm1, %%rax\n"
@@ -404,7 +450,7 @@ void addData(FILE *fout, AST *node)
 						break;
 					case DATATYPE_CHAR:
 						fprintf(fout, "## TAC_PRINT_CHAR\n"
-									  "movzbl\t%s(%%rip), %%eax\n"
+									  "movzbl\t_%s(%%rip), %%eax\n"
 									  "movsbl\t%%al, %%eax\n"
 									  "movl\t%%eax, %%esi\n"
 									  "leaq\tprintChar(%%rip), %%rax\n"
@@ -414,7 +460,7 @@ void addData(FILE *fout, AST *node)
 						break;
 					case DATATYPE_INT:
 						fprintf(fout, "## TAC_PRINT_INT\n"
-									  "\tmovl\t%s(%%rip), %%eax\n"
+									  "\tmovl\t_%s(%%rip), %%eax\n"
 									  "\tmovl\t%%eax, %%esi\n"
 									  "\tleaq\tprintNumber(%%rip), %%rax\n"
 									  "\tmovq\t%%rax, %%rdi\n"
@@ -424,7 +470,7 @@ void addData(FILE *fout, AST *node)
 					case DATATYPE_BOOL:
 						fprintf(fout,
 								"## TAC_PRINT_BOOL 1 is TRUE 0 is False\n"
-								"\tmovl\t%s(%%rip), %%eax\n"
+								"\tmovl\t_%s(%%rip), %%eax\n"
 								"\tmovl\t%%eax, %%esi\n"
 								"\tleaq\tprintNumber(%%rip), %%rax\n"
 								"\tmovq\t%%rax, %%rdi\n"
@@ -436,29 +482,29 @@ void addData(FILE *fout, AST *node)
 				break;
 			case TAC_ADD:
 				fprintf(fout, "## TAC_ADD\n"
-							  "\tmovl\t%s(%%rip), %%edx\n"
-							  "\tmovl\t%s(%%rip), %%eax\n"
+							  "\tmovl\t_%s(%%rip), %%edx\n"
+							  "\tmovl\t_%s(%%rip), %%eax\n"
 							  "\taddl\t%%edx, %%eax\n",
 						tac->op1->text, tac->op2->text);
 				break;
 			case TAC_SUB:
 				fprintf(fout, "## TAC_SUB\n"
-							  "\tmovl\t%s(%%rip), %%eax\n"
-							  "\tmovl\t%s(%%rip), %%edx\n"
+							  "\tmovl\t_%s(%%rip), %%eax\n"
+							  "\tmovl\t_%s(%%rip), %%edx\n"
 							  "\tsubl\t%%edx, %%eax\n\n",
 						tac->op1->text, tac->op2->text);
 				break;
 			case TAC_MUL:
 				fprintf(fout, "## TAC_MUL\n"
-							  "\tmovl\t%s(%%rip), %%edx\n"
-							  "\tmovl\t%s(%%rip), %%eax\n"
+							  "\tmovl\t_%s(%%rip), %%edx\n"
+							  "\tmovl\t_%s(%%rip), %%eax\n"
 							  "\timull\t%%edx, %%eax\n\n",
 						tac->op1->text, tac->op2->text);
 				break;
 			case TAC_DIV:
 				fprintf(fout, "## TAC_DIV\n"
-							  "\tmovl\t	%s(%%rip), %%eax\n"
-							  "\tmovl\t	%s(%%rip), %%ecx\n"
+							  "\tmovl\t	_%s(%%rip), %%eax\n"
+							  "\tmovl\t	_%s(%%rip), %%ecx\n"
 							  "\tcltd\n"
 							  "\tidivl\t	%%ecx\n\n",
 						tac->op1->text,
@@ -466,9 +512,37 @@ void addData(FILE *fout, AST *node)
 				break;
 			case TAC_COPY:
 				fprintf(fout, "## TAC_COPY\n"
-							  "movl	%%eax, %s(%%rip)\n\n",
+							  "\tmovl	%%eax, _%s(%%rip)\n\n",
 						tac->res->text);
 				break;
+          case TAC_LABEL:
+              fprintf(fout, ".%s:\n", tac->res->text);
+              break;
+
+            case TAC_JUMP:
+              fprintf(fout, "\tjmp .%s\n", tac->res->text);
+              break;
+
+            case TAC_IFZ:
+              fprintf(fout, "\tmovl _%s(%%rip), %%eax\n"
+                     "\tmovl $1, %%edx\n"
+                     "\tandl %%eax, %%edx\n"
+                     "\tjz .%s\n", tac->op1->text, tac->res->text);
+             break;
+			case TAC_VEC_CALL: 
+                fprintf(fout,"## TAC_VEC_CALL\n"
+                        "\txorl	%%eax, %%eax\n"
+                        "\tmovq	_%s@GOTPCREL(%%rip), %%rcx\n"
+                        "\tmovl	_%s+%d(%%rip), %%edx\n"
+                        "\tmovl	%%edx, (%%rcx)\n\n",tac->res->text, tac->op1->text, 4*atoi(tac->op2->text));
+                break;
+			case TAC_VECATTR: 
+                fprintf(fout, 
+                    "## TAC_VECATTR\n"
+                        "\txorl	%%eax, %%eax\n"
+                        "\tmovl	_%s(%%rip), %%esi\n"
+                        "\tmovl	 %%esi, _%s+%d(%%rip)\n"
+                        "\tmovl	%%esi, (%%rcx,%%rdx,4)\n\n", tac->op2->text, tac->res->text, 4*atoi(tac->op1->text));
 			}
 		}
 
@@ -476,6 +550,8 @@ void addData(FILE *fout, AST *node)
 
 		printASM(fout);
 		addData(fout, node);
+		addImmediates(fout);
+		addTemporaries(fout);
 
 		fclose(fout);
 	}

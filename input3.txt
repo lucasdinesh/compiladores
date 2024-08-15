@@ -2,11 +2,20 @@
 int vector [ 10 ]: 1 2 3 4 5 6 7 8 9 10;
 char a :'c';
 bool b: true;
+int c: 4;
 
 int main ()
    {
       print "Digite algo";
       print bool b;
+      print int 75;
+      print char a;
+      c = c+6;
+      print int c;
+      vector[7] = 999;
+      vector[7] = vector[2] + 5;
+      print int vector[2];
+
    }
 
 // END

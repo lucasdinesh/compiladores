@@ -43,6 +43,7 @@ int getDatatypeFromHash(int type);
 
 void makeAssemblyTempName(hash_node *node);
 void printASM(FILE *fout);
+hash_node** getHash();
 
 
 #endif
