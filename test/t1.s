@@ -17,7 +17,13 @@ b:
 	.long	3
 	.section	.rodata
 .LC0:
-	.string	"OK"
+	.string	"a==8"
+.LC1:
+	.string	"Cai no ELse a==8"
+.LC2:
+	.string	"a>8"
+.LC3:
+	.string	"Cai no ELse a>8"
 	.text
 	.globl	main
 	.type	main, @function
@@ -37,10 +43,27 @@ main:
 	movq	%rax, %rdi
 	movl	$0, %eax
 	call	printf@PLT
+	jmp	.L3
 .L2:
-	movl	4+b(%rip), %eax
-	addl	$5, %eax
-	movl	%eax, a(%rip)
+	leaq	.LC1(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+.L3:
+	movl	a(%rip), %eax
+	cmpl	$8, %eax
+	jle	.L4
+	leaq	.LC2(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	jmp	.L5
+.L4:
+	leaq	.LC3(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+.L5:
 	movl	$0, %eax
 	popq	%rbp
 	.cfi_def_cfa 7, 8

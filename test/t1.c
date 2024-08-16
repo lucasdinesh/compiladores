@@ -5,9 +5,20 @@ int b[] = {1,2,3};
 int main()
 {
     if(a==8){
-        printf("OK");
+        printf("a==8");
+    }
+    else{
+         printf("Cai no ELse a==8" );
+
+    }
+
+    if(a>8){
+        printf("a>8");
+    }
+    else{
+         printf("Cai no ELse a>8");
+
     }
  
-    a = b[1] + 5;
   
 }

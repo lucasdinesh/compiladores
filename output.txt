@@ -3,7 +3,10 @@ char a : 'c' ;
 bool b : true ;
 int c : 4 ;
 int main(){
-print int vector[ 7 ];
-vector[ 7 ] =  999 ;
-print int vector[ 7 ];
-}
+if( c > 3 )
+{
+print  "c>4" ;
+}else
+{
+print  "C não é maior que 4" ;
+}}

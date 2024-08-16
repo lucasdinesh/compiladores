@@ -9,42 +9,45 @@ printChar: .string "%c\n"
 main:
 	pushq %rbp
 
-## TAC_VEC_CALL
-	movl	_vector+28(%rip), %edx
-	movl	%edx, _mYWeeirT_emp0(%rip)
+## TAC_GREAT
+	movl	_c(%rip), %eax
+	cmpl	_3(%rip), %eax
+	setg    %al
+	movzbl  %al, %eax
+	movl	 %eax,_mYWeeirT_emp0(%rip)
 
-## TAC_PRINT_INT
-	movl	_mYWeeirT_emp0(%rip), %eax
-	movl	%eax, %esi
-	leaq	printNumber(%rip), %rax
-	movq	%rax, %rdi
-	call	printf@PLT
+	movl _mYWeeirT_emp0(%rip), %eax
+	movl $1, %edx
+	andl %eax, %edx
+	jz .mYLabe_l0
+## TAC_PRINT_STRING
+	leaq _tempStringName_l17(%rip), %rax
+	movq	%rax, %rsi
+	leaq printSTR(%rip), %rax
+	movq %rax, %rdi
+	call printf@PLT
 
-## TAC_VECATTR
-	xorl	%eax, %eax
-	movl	_999(%rip), %esi
-	movl	 %esi, _vector+28(%rip)
+	jmp .mYLabe_l1
+.mYLabe_l0:
+## TAC_PRINT_STRING
+	leaq _tempStringName_l18(%rip), %rax
+	movq	%rax, %rsi
+	leaq printSTR(%rip), %rax
+	movq %rax, %rdi
+	call printf@PLT
 
-## TAC_VEC_CALL
-	movl	_vector+28(%rip), %edx
-	movl	%edx, _mYWeeirT_emp1(%rip)
-
-## TAC_PRINT_INT
-	movl	_mYWeeirT_emp1(%rip), %eax
-	movl	%eax, %esi
-	leaq	printNumber(%rip), %rax
-	movq	%rax, %rdi
-	call	printf@PLT
-
+.mYLabe_l1:
 ## TAC_ENDFUN
 	popq %rbp
 	ret
 
 ##DATA SECTION
 	.data
+_tempStringName_l17:	.string	"c>4"
 _a:	.byte	99
 _b:	.long	1
 _c:	.long	4
+_tempStringName_l18:	.string	"C não é maior que 4"
 _vector:
 	.long	1
 	.long	2
@@ -74,13 +77,9 @@ _8:
 	.long   8
 _9:
 	.long   9
-_999:
-	.long   999
 _10:
 	.long   10
 _'c':
 	.long   99
 _mYWeeirT_emp0:
-	.long  0
-_mYWeeirT_emp1:
 	.long  0

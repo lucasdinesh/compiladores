@@ -1,0 +1,3 @@
+    "\tmovl\t_%s(%%rip), %%eax\n"
+	"\tcmpl\t_%s(%%rip), %%eax\n"
+	"\tjne\t.L2\n\n"
